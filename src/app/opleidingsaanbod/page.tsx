@@ -1,27 +1,20 @@
 
 import { SectionContainer } from '@/components/ui/SectionContainer';
-import { OpleidingenClientView } from '@/components/opleidingen/OpleidingenClientView'; // Nieuwe client component
-import type { Opleiding, CursusDetail, Locatie } from '@/types/opleidingen'; // Aangenomen dat je types hebt gedefinieerd
+import { OpleidingenClientView } from '@/components/opleidingen/OpleidingenClientView';
+import type { Opleiding, CursusDetail, Locatie } from '@/types/opleidingen';
+import { fetchAndCache } from '@/lib/cache'; // Importeer de nieuwe cache functie
 
-async function fetchData(url: string): Promise<any[]> {
-  try {
-    const response = await fetch(url, { cache: 'no-store' });
-    if (!response.ok) {
-      console.error(`Failed to fetch ${url}: ${response.statusText}`);
-      return [];
-    }
-    return await response.json();
-  } catch (error) {
-    console.error(`Error fetching ${url}:`, error);
-    return [];
-  }
-}
+// Definieer de cache keys
+const OPLEIDINGEN_CACHE_KEY = 'opleidingen_data_v1';
+const CURSUS_DETAILS_CACHE_KEY = 'cursus_details_data_v1';
+const LOCATIES_CACHE_KEY = 'locaties_data_v1';
 
 export default async function OpleidingsaanbodPage() {
+  // Gebruik fetchAndCache in plaats van een directe fetch
   const [opleidingenData, cursusDetailsData, locatiesData] = await Promise.all([
-    fetchData('https://opleidingen.frissestart.nl/wp-json/mo/v1/opleidingen') as Promise<Opleiding[]>,
-    fetchData('https://opleidingen.frissestart.nl/wp-json/mo/v1/cursussen') as Promise<CursusDetail[]>,
-    fetchData('https://opleidingen.frissestart.nl/wp-json/mo/v1/locaties') as Promise<Locatie[]>,
+    fetchAndCache<Opleiding>('https://opleidingen.frissestart.nl/wp-json/mo/v1/opleidingen', OPLEIDINGEN_CACHE_KEY),
+    fetchAndCache<CursusDetail>('https://opleidingen.frissestart.nl/wp-json/mo/v1/cursussen', CURSUS_DETAILS_CACHE_KEY),
+    fetchAndCache<Locatie>('https://opleidingen.frissestart.nl/wp-json/mo/v1/locaties', LOCATIES_CACHE_KEY),
   ]);
 
   return (
