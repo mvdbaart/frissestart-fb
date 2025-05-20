@@ -2,30 +2,52 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image'; // Importeer de Image component
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, BookOpenText, Users, Info, MessageSquare } from 'lucide-react';
+import {
+  Menu,
+  BookOpenText,
+  Users,
+  Info,
+  MessageSquare,
+  ChevronDown,
+  Award, // Award icoon toegevoegd
+  HomeIcon, // HomeIcon hernoemd voor consistentie (was Info)
+  BookMarked, // BookMarked voor Alle Opleidingen
+} from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-const navLinks = [
-  { href: '/', label: 'Home', icon: <Info className="h-5 w-5" /> },
-  { href: '/opleidingsaanbod', label: 'Opleidingsaanbod', icon: <BookOpenText className="h-5 w-5" /> },
-  { href: '/over-ons', label: 'Over Ons', icon: <Users className="h-5 w-5" /> },
-  { href: '/contact', label: 'Contact', icon: <MessageSquare className="h-5 w-5" /> },
+const mainNavLinks = [
+  { href: '/', label: 'Home', icon: <HomeIcon className="h-5 w-5 mr-2" /> },
+  // Opleidingsaanbod wordt hieronder apart behandeld met een dropdown
+  { href: '/over-ons', label: 'Over Ons', icon: <Users className="h-5 w-5 mr-2" /> },
+  { href: '/contact', label: 'Contact', icon: <MessageSquare className="h-5 w-5 mr-2" /> },
+];
+
+const opleidingsAanbodItems = [
+  { href: '/opleidingsaanbod', label: 'Alle Opleidingen', icon: <BookMarked className="h-5 w-5 mr-2" /> },
+  { href: '/opleidingsaanbod/intern-certificeren', label: 'Intern Certificeren', icon: <Award className="h-5 w-5 mr-2" /> },
 ];
 
 export function Header() {
   const pathname = usePathname();
 
-  const NavLinkItem = ({ href, label, icon, isMobile = false }: { href: string; label: string; icon: React.ReactNode, isMobile?: boolean }) => (
+  const NavLinkItem = ({ href, label, icon, isMobile = false, className }: { href: string; label: string; icon?: React.ReactNode, isMobile?: boolean, className?: string }) => (
     <Link href={href} passHref legacyBehavior>
       <a
         className={cn(
-          'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
-          pathname === href ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground',
-          isMobile && 'text-lg py-3'
+          'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+          pathname === href ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+          isMobile && 'text-lg py-3 w-full',
+          className
         )}
       >
         {icon}
@@ -33,7 +55,6 @@ export function Header() {
       </a>
     </Link>
   );
-  
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -42,10 +63,42 @@ export function Header() {
           <Image src="/images/logo.png" alt="FrisseStart Logo" width={150} height={40} priority />
         </Link>
 
-        <nav className="hidden md:flex items-center gap-4 lg:gap-6">
-          {navLinks.map((link) => (
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-1 lg:gap-2">
+          {mainNavLinks.map((link) => (
             <NavLinkItem key={link.href} {...link} />
           ))}
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className={cn(
+                  'flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
+                  pathname.startsWith('/opleidingsaanbod') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <BookOpenText className="h-5 w-5" />
+                Opleidingsaanbod
+                <ChevronDown className="h-4 w-4 opacity-70" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              {opleidingsAanbodItems.map((item) => (
+                <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
+                  <Link href={item.href} passHref legacyBehavior>
+                    <a className={cn(
+                      'flex items-center w-full',
+                      pathname === item.href && 'font-semibold text-primary' // Actieve state
+                    )}>
+                      {item.icon}
+                      {item.label}
+                    </a>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -54,6 +107,7 @@ export function Header() {
               <a>Vind uw Cursus</a>
             </Link>
           </Button>
+          {/* Mobile Navigation */}
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
@@ -67,10 +121,22 @@ export function Header() {
                   <Link href="/" className="mb-4">
                     <Image src="/images/logo.png" alt="FrisseStart Logo" width={120} height={32} />
                   </Link>
-                  <nav className="flex flex-col gap-4">
-                    {navLinks.map((link) => (
+                  <nav className="flex flex-col gap-1">
+                    {mainNavLinks.map((link) => (
                        <NavLinkItem key={link.href} {...link} isMobile />
                     ))}
+                    {/* Opleidingsaanbod items voor mobiel */}
+                    <div className="mt-2">
+                        <p className="px-3 py-2 text-sm font-medium text-muted-foreground flex items-center gap-2">
+                            <BookOpenText className="h-5 w-5" />
+                            Opleidingsaanbod
+                        </p>
+                        <div className="pl-6 flex flex-col gap-1 border-l-2 border-muted ml-3">
+                            {opleidingsAanbodItems.map((item) => (
+                                <NavLinkItem key={item.href} href={item.href} label={item.label} icon={item.icon} isMobile className="text-muted-foreground hover:text-foreground" />
+                            ))}
+                        </div>
+                    </div>
                   </nav>
                    <Button variant="default" asChild className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground">
                      <Link href="/opleidingsaanbod" passHref legacyBehavior>
