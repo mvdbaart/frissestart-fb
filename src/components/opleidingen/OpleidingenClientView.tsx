@@ -31,8 +31,8 @@ export function OpleidingenClientView({
   initialCursusDetailsData,
   initialLocatiesData,
 }: OpleidingenClientViewProps) {
-  const [selectedCursus, setSelectedCursus] = useState<string>('');
-  const [selectedLocatie, setSelectedLocatie] = useState<string>('');
+  const [selectedCursus, setSelectedCursus] = useState<string>('_all_courses_');
+  const [selectedLocatie, setSelectedLocatie] = useState<string>('_all_locations_');
   const [showCode95Only, setShowCode95Only] = useState<boolean>(false);
   const [showSoobOnly, setShowSoobOnly] = useState<boolean>(false);
 
@@ -52,7 +52,10 @@ export function OpleidingenClientView({
     const namen = new Set<string>();
     initialOpleidingenData.forEach(opl => {
       const detail = cursusDetailsMap.get(opl.cursus_id);
-      if (detail?.naam) namen.add(detail.naam);
+      // Ensure 'naam' exists, is a string, and is not empty after trimming
+      if (detail && typeof detail.naam === 'string' && detail.naam.trim().length > 0) {
+        namen.add(detail.naam);
+      }
     });
     return Array.from(namen).sort();
   }, [initialOpleidingenData, cursusDetailsMap]);
@@ -61,7 +64,10 @@ export function OpleidingenClientView({
     const namen = new Set<string>();
     initialOpleidingenData.forEach(opl => {
       const locatie = locatiesMap.get(opl.locatie_id);
-      if (locatie?.naam) namen.add(locatie.naam);
+      // Ensure 'naam' exists, is a string, and is not empty after trimming
+      if (locatie && typeof locatie.naam === 'string' && locatie.naam.trim().length > 0) {
+        namen.add(locatie.naam);
+      }
     });
     return Array.from(namen).sort();
   }, [initialOpleidingenData, locatiesMap]);
@@ -95,8 +101,8 @@ export function OpleidingenClientView({
         return cursusDatum >= nu;
       })
       .filter(course => {
-        if (selectedCursus && course.cursusNaam !== selectedCursus) return false;
-        if (selectedLocatie && course.locatieNaam !== selectedLocatie) return false;
+        if (selectedCursus && selectedCursus !== '_all_courses_' && course.cursusNaam !== selectedCursus) return false;
+        if (selectedLocatie && selectedLocatie !== '_all_locations_' && course.locatieNaam !== selectedLocatie) return false;
         if (showCode95Only && (!course.punten_code95 || parseFloat(course.punten_code95) <= 0)) return false;
         if (showSoobOnly && (!course.SOOB || parseFloat(course.SOOB) <= 0)) return false;
         return true;
@@ -141,12 +147,12 @@ export function OpleidingenClientView({
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="space-y-2">
             <Label htmlFor="filter-cursusnaam" className="font-medium">Cursusnaam</Label>
-            <Select value={selectedCursus} onValueChange={setSelectedCursus}>
+            <Select value={selectedCursus} onValueChange={(value) => setSelectedCursus(value === '_all_courses_' ? '' : value)}>
               <SelectTrigger id="filter-cursusnaam">
                 <SelectValue placeholder="Alle cursussen" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Alle cursussen</SelectItem>
+                <SelectItem value="_all_courses_">Alle cursussen</SelectItem>
                 {uniqueCursusNamen.map(naam => (
                   <SelectItem key={naam} value={naam}>{naam}</SelectItem>
                 ))}
@@ -155,12 +161,12 @@ export function OpleidingenClientView({
           </div>
           <div className="space-y-2">
             <Label htmlFor="filter-locatie" className="font-medium">Locatie</Label>
-            <Select value={selectedLocatie} onValueChange={setSelectedLocatie}>
+            <Select value={selectedLocatie} onValueChange={(value) => setSelectedLocatie(value === '_all_locations_' ? '' : value)}>
               <SelectTrigger id="filter-locatie">
                 <SelectValue placeholder="Alle locaties" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Alle locaties</SelectItem>
+                <SelectItem value="_all_locations_">Alle locaties</SelectItem>
                 {uniqueLocatieNamen.map(naam => (
                   <SelectItem key={naam} value={naam}>{naam}</SelectItem>
                 ))}
@@ -256,3 +262,5 @@ export function OpleidingenClientView({
     </>
   );
 }
+
+    
