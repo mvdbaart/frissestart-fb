@@ -1,4 +1,5 @@
 
+
 import { HeroSection } from '@/components/sections/HeroSection';
 import { AboutSection } from '@/components/sections/AboutSection';
 import { FeaturesSection } from '@/components/sections/FeaturesSection';
@@ -77,10 +78,14 @@ function CtaSection() {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" variant="outline" asChild className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 border-primary-foreground hover:border-primary-foreground/90 shadow-lg transform hover:scale-105 transition-transform duration-300">
-            <Link href="/cursussen">Bekijk Alle Cursussen</Link>
+            <Link href="/opleidingsaanbod" passHref legacyBehavior>
+              <a>Bekijk Alle Cursussen</a>
+            </Link>
           </Button>
           <Button size="lg" variant="ghost" asChild className="text-primary-foreground hover:bg-white/20 hover:text-primary-foreground transform hover:scale-105 transition-transform duration-300">
-            <Link href="/contact">Neem Contact Op</Link>
+            <Link href="/contact" passHref legacyBehavior>
+              <a>Neem Contact Op</a>
+            </Link>
           </Button>
         </div>
       </div>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -10,7 +11,7 @@ import { cn } from '@/lib/utils';
 
 const navLinks = [
   { href: '/', label: 'Home', icon: <Info className="h-5 w-5" /> },
-  { href: '/cursussen', label: 'Cursussen', icon: <BookOpenText className="h-5 w-5" /> },
+  { href: '/opleidingsaanbod', label: 'Opleidingsaanbod', icon: <BookOpenText className="h-5 w-5" /> },
   { href: '/over-ons', label: 'Over Ons', icon: <Users className="h-5 w-5" /> },
   { href: '/contact', label: 'Contact', icon: <MessageSquare className="h-5 w-5" /> },
 ];
@@ -38,7 +39,6 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
         <Link href="/" className="flex items-center gap-2" aria-label="FrisseStart Home">
-          {/* Vervang de SVG Logo component met de Image component */}
           <Image src="/images/logo.png" alt="FrisseStart Logo" width={150} height={40} priority />
         </Link>
 
@@ -50,7 +50,9 @@ export function Header() {
 
         <div className="flex items-center gap-2">
            <Button variant="default" asChild className="hidden sm:flex bg-primary hover:bg-primary/90 text-primary-foreground">
-            <Link href="/#course-recommender">Vind uw Cursus</Link>
+            <Link href="/opleidingsaanbod" passHref legacyBehavior>
+              <a>Vind uw Cursus</a>
+            </Link>
           </Button>
           <div className="md:hidden">
             <Sheet>
@@ -63,7 +65,6 @@ export function Header() {
               <SheetContent side="right" className="w-[300px] sm:w-[400px] p-6">
                 <div className="flex flex-col gap-6">
                   <Link href="/" className="mb-4">
-                    {/* Ook hier het logo vervangen voor consistentie in mobiel menu */}
                     <Image src="/images/logo.png" alt="FrisseStart Logo" width={120} height={32} />
                   </Link>
                   <nav className="flex flex-col gap-4">
@@ -72,7 +73,9 @@ export function Header() {
                     ))}
                   </nav>
                    <Button variant="default" asChild className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground">
-                     <Link href="/#course-recommender">Vind uw Cursus</Link>
+                     <Link href="/opleidingsaanbod" passHref legacyBehavior>
+                       <a>Vind uw Cursus</a>
+                      </Link>
                    </Button>
                 </div>
               </SheetContent>
