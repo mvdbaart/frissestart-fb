@@ -16,7 +16,7 @@ import {
   HomeIcon,
   BookMarked,
   Briefcase,
-  TagIcon, // TagIcon toegevoegd
+  TagIcon, 
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -28,14 +28,17 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const homeLink = { href: '/', label: 'Home', icon: <HomeIcon className="h-5 w-5 mr-2" /> };
+const opleidingsAanbodLink = { label: 'Opleidingsaanbod', icon: <BookOpenText className="h-5 w-5" /> };
 const overOnsLink = { href: '/over-ons', label: 'Over Ons', icon: <Users className="h-5 w-5 mr-2" /> };
+const onzeInstructeursLink = { href: '/onze-instructeurs', label: 'Onze Instructeurs', icon: <Users className="h-5 w-5 mr-2" /> };
 const contactLink = { href: '/contact', label: 'Contact', icon: <MessageSquare className="h-5 w-5 mr-2" /> };
+
 
 const opleidingsAanbodItems = [
   { href: '/opleidingsaanbod', label: 'Alle Opleidingen', icon: <BookMarked className="h-5 w-5 mr-2" /> },
   { href: '/opleidingsaanbod/intern-certificeren', label: 'Intern Certificeren', icon: <Award className="h-5 w-5 mr-2" /> },
   { href: '/opleidingsaanbod/incompany-training', label: 'Incompany Training', icon: <Briefcase className="h-5 w-5 mr-2" /> },
-  { href: '/actie-voordeel', label: 'Actie Voordeel', icon: <TagIcon className="h-5 w-5 mr-2" /> }, // Nieuwe link toegevoegd
+  { href: '/actie-voordeel', label: 'Actie Voordeel', icon: <TagIcon className="h-5 w-5 mr-2" /> },
 ];
 
 export function Header() {
@@ -74,11 +77,11 @@ export function Header() {
                 variant="ghost"
                 className={cn(
                   'flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
-                  pathname.startsWith('/opleidingsaanbod') || pathname.startsWith('/actie-voordeel') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
+                  (pathname.startsWith('/opleidingsaanbod') || pathname.startsWith('/actie-voordeel')) ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                <BookOpenText className="h-5 w-5" />
-                Opleidingsaanbod
+                {opleidingsAanbodLink.icon}
+                {opleidingsAanbodLink.label}
                 <ChevronDown className="h-4 w-4 opacity-70" />
               </Button>
             </DropdownMenuTrigger>
@@ -99,6 +102,7 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          <NavLinkItem {...onzeInstructeursLink} />
           <NavLinkItem {...overOnsLink} />
           <NavLinkItem {...contactLink} />
         </nav>
@@ -129,15 +133,16 @@ export function Header() {
                     {/* Opleidingsaanbod items voor mobiel */}
                     <div className="mt-2">
                         <p className="px-3 py-2 text-sm font-medium text-muted-foreground flex items-center gap-2">
-                            <BookOpenText className="h-5 w-5" />
-                            Opleidingsaanbod
+                            {opleidingsAanbodLink.icon}
+                            {opleidingsAanbodLink.label}
                         </p>
                         <div className="pl-6 flex flex-col gap-1 border-l-2 border-muted ml-3">
                             {opleidingsAanbodItems.map((item) => (
-                                <NavLinkItem key={item.href} href={item.href} label={item.label} icon={item.icon} isMobile className="text-muted-foreground hover:text-foreground" />
+                                <NavLinkItem key={item.href} href={item.href} label={item.label} icon={item.icon} isMobile className="text-muted-foreground hover:text-foreground text-base" />
                             ))}
                         </div>
                     </div>
+                    <NavLinkItem {...onzeInstructeursLink} isMobile />
                     <NavLinkItem {...overOnsLink} isMobile />
                     <NavLinkItem {...contactLink} isMobile />
                   </nav>
@@ -155,3 +160,5 @@ export function Header() {
     </header>
   );
 }
+
+    
