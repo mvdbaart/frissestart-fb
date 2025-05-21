@@ -2,10 +2,10 @@
 import { SectionContainer } from '@/components/ui/SectionContainer';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '@/components/ui/card'; // CardDescription toegevoegd
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Link from 'next/link';
-import { CheckCircle, Briefcase, Users, Lightbulb, Target, DollarSign, CalendarClock, BookOpen, Award, ShieldCheck, HelpCircle, Clock, MapPin, TrendingUp } from 'lucide-react';
+import { CheckCircle, Briefcase, Users, Lightbulb, Target, DollarSign, CalendarClock, BookOpen, Award, ShieldCheck, HelpCircle } from 'lucide-react';
 
 const watBiedenWeItems = [
   "Trainingen vanaf €29.50,- p.p.",
@@ -77,7 +77,7 @@ export default function IncompanyTrainingPage() {
             <p className="text-muted-foreground mb-4">
               Kies voor het gemak en de flexibiliteit van onze trainingen, u kunt ze met diverse cursussen indelen en kan zo op maat worden samengesteld. Stimuleer de samenwerking terwijl uw werknemers waardevolle kennis en vaardigheden opdoen.
             </p>
-             <p className="text-muted-foreground">
+            <p className="text-muted-foreground">
               Een uniek aspect van FrisseStart is dat het ook mogelijk is om eigen trainers in te zetten. Klanten kunnen hun eigen langdurige samenwerkingsverbanden met trainers behouden of gebruikmaken van een interne instructeur/trainer die zij in dienst hebben. Dit biedt extra flexibiliteit en maatwerk voor de klant.
             </p>
           </div>
@@ -127,9 +127,9 @@ export default function IncompanyTrainingPage() {
           </CardContent>
           <CardFooter className="bg-muted/50 p-6 flex justify-center">
             <Button size="lg" asChild className="bg-secondary hover:bg-secondary/90 text-secondary-foreground text-lg py-3 px-8 shadow-md">
-              <Link href="/contact?subject=Offerte%20Aanvraag%20Incompany%20Training" passHref legacyBehavior>
-                <a>Offerte Aanvragen</a>
-              </Link>
+               <Link href="/contact?subject=Offerte%20Aanvraag%20Incompany%20Training" passHref legacyBehavior>
+                 <a>Offerte Aanvragen</a>
+               </Link>
             </Button>
           </CardFooter>
         </Card>
@@ -139,7 +139,7 @@ export default function IncompanyTrainingPage() {
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground">Voordelen van Incompany Trainingen</h2>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8"> {/* Changed to lg:grid-cols-2 for better fit */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
           {voordelenIncompany.map((voordeel) => (
             <Card key={voordeel.title} className="bg-card shadow-md hover:shadow-lg transition-shadow flex flex-col text-center">
               <CardHeader className="items-center">
