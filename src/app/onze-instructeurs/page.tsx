@@ -60,7 +60,7 @@ const instructeurs = [
       "Logistieke trainingen ( Hef en Reachtruck, EPT, Stapelaar)",
       "Theorie trainingen ( Chauffeursdagen, Actualisatie vakbekwaamheid )"
     ],
-    afbeelding: "/images/alain-soucy.jpg"
+    afbeelding: "/images/alain-soucy.png"
   }
 ];
 
