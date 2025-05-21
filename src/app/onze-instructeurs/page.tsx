@@ -15,8 +15,7 @@ const instructeurs = [
       "Logistieke trainingen ( Meenneem-, Hef en Reachtruck, Hoogwerker)",
       "Theorie trainingen ( VCA, Chauffeursdagen, Techniek en Veiligheid)"
     ],
-    afbeelding: "https://placehold.co/200x200.png",
-    aiHint: "male instructor portrait"
+    afbeelding: "/images/marc-van-hoek.jpg"
   },
   {
     naam: "Paul van de Warrenburg",
@@ -28,8 +27,7 @@ const instructeurs = [
       "Logistieke trainingen ( Hef en Reachtruck, EPT, Stapelaar)",
       "Theorie trainingen ( Chauffeursdagen, Digitale tachograaf en boordcomputers)"
     ],
-    afbeelding: "https://placehold.co/200x200.png",
-    aiHint: "male instructor training"
+    afbeelding: "/images/paul-van-de-warrenburg.jpg"
   },
   {
     naam: "Menno Gijsbers",
@@ -41,31 +39,28 @@ const instructeurs = [
       "Logistieke trainingen ( Hef en Reachtruck, EPT, Stapelaar)",
       "Theorie trainingen ( Chauffeursdagen )"
     ],
-    afbeelding: "https://placehold.co/200x200.png",
-    aiHint: "instructor logistics"
+    afbeelding: "/images/menno-gijsbers.jpg"
   },
   {
     naam: "Dorien Schriks",
     functie: "Instructeur WRM",
-    bio: "Na 25 jaar ervaring als chauffeur voornamelijk in de bouwsector ben ik in 2010 als zelfstandige begonnen. Ruim 10 jaar bezat ik 2 vrachtwagens, waar ik samen met mijn partner in het speciaal transport heb gereden. In 2020 heb ik mijzelf omgeschoold tot rijinstructeur B. Na 1 jaar als instructeur gewerkt te hebben, kriebelde het weer om als chauffeur te gaan rijden. Eind 2023 ben ik in contact gekomen met FrisseStart, daarna heb ik besloten om mijn C en CE instructie te behalen. Inmiddels heb ik in 2024 mijn C en CE instructie behaald. Sinds mei 2024 ben ik in dienst van FrisseStart en verzorg verschillende cursussen als Docent Code95, daarnaast geef ik rijles en praktijktrainingen. Binnenkort ga ik ook starten om mijn LZV certificeringen te behalen.",
+    bio: "Na 25 jaar ervaring als chauffeur voornamelijk in de bouwsector bem ben ik in 2010 als zelfstandige begonnen. Ruim 10 jaar bezat ik 2 vrachtwagens, waar ik samen met mijn partner in het speciaal transport heb gereden. In 2020 heb ik mijzelf omgeschoold tot rijinstructeur B. Na 1 jaar als instructeur gewerkt te hebben, kriebelde het weer om als chauffeur te gaan rijden. Eind  2023 ben ik in contact gekomen met FrisseStart, daarna heb ik besloten om mijn C en CE instructie te behalen. Inmiddels heb ik in 2024 mijn C  en CE instructie behaald. Sinds mei 2024 ben ik in dienst van FrisseStart en verzorg verschillende cursussen als Docent Code95, daarnaast geef ik rijles en praktijktrainingen. Binnenkort ga ik ook starten om mijn LZV certificeringen te behalen.",
     specialisaties: [
       "Rijlessen C, CE",
       "Logistieke trainingen ( Hef en Reachtruck, Hoogwerker, EPT, Stapelaar)",
       "Theorie trainingen ( Chauffeursdagen, Lading Zekeren )"
     ],
-    afbeelding: "https://placehold.co/200x200.png",
-    aiHint: "female instructor driving"
+    afbeelding: "/images/dorien-schriks.jpg"
   },
   {
     naam: "Alain Soucy",
     functie: "Logistiek instructeur",
-    bio: "Op 17 jarige leeftijd ben ik in de Logistiek terecht gekomen, na 10 jaar met verschillende heftrucks gewerkt te hebben, heb ik in 1999 mijn rijbewijzen C en CE behaald. Vervolgens ben ik eind jaren ’90 als chauffeur gestart. Ik heb ruim 25 jaar als internationaal chauffeur gewerkt in de tank- en bulktransport.",
+    bio: "Op 17 jarige leeftijd ben ik in de Logistiek terecht gekomen, na 10 jaar met verschillende heftrucks gewerkt te hebben, heb ik in 1999 mijn rijbewijzen C en CE behaald. Vervolgens ben ik eind jaren ’90 als chauffeur gestart. Ik heb ruim 25 jaar als internationaal chauffeur gewerkt in de tank- en bulktransport",
     specialisaties: [
       "Logistieke trainingen ( Hef en Reachtruck, EPT, Stapelaar)",
       "Theorie trainingen ( Chauffeursdagen, Actualisatie vakbekwaamheid )"
     ],
-    afbeelding: "https://placehold.co/200x200.png",
-    aiHint: "logistics instructor training"
+    afbeelding: "/images/alain-soucy.jpg"
   }
 ];
 
@@ -120,7 +115,6 @@ export default function OnzeInstructeursPage() {
                     alt={`Foto van ${instructeur.naam}`}
                     layout="fill"
                     objectFit="cover"
-                    data-ai-hint={instructeur.aiHint}
                   />
                 </div>
                 <CardTitle className="text-2xl text-foreground">{instructeur.naam}</CardTitle>
@@ -145,5 +139,3 @@ export default function OnzeInstructeursPage() {
     </>
   );
 }
-
-    
