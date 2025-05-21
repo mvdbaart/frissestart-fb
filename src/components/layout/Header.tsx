@@ -12,9 +12,10 @@ import {
   Info,
   MessageSquare,
   ChevronDown,
-  Award, // Award icoon toegevoegd
-  HomeIcon, // HomeIcon hernoemd voor consistentie (was Info)
-  BookMarked, // BookMarked voor Alle Opleidingen
+  Award,
+  HomeIcon,
+  BookMarked,
+  Briefcase, // Briefcase icon for Incompany Training
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -27,7 +28,6 @@ import {
 
 const mainNavLinks = [
   { href: '/', label: 'Home', icon: <HomeIcon className="h-5 w-5 mr-2" /> },
-  // Opleidingsaanbod wordt hieronder apart behandeld met een dropdown
   { href: '/over-ons', label: 'Over Ons', icon: <Users className="h-5 w-5 mr-2" /> },
   { href: '/contact', label: 'Contact', icon: <MessageSquare className="h-5 w-5 mr-2" /> },
 ];
@@ -35,6 +35,7 @@ const mainNavLinks = [
 const opleidingsAanbodItems = [
   { href: '/opleidingsaanbod', label: 'Alle Opleidingen', icon: <BookMarked className="h-5 w-5 mr-2" /> },
   { href: '/opleidingsaanbod/intern-certificeren', label: 'Intern Certificeren', icon: <Award className="h-5 w-5 mr-2" /> },
+  { href: '/opleidingsaanbod/incompany-training', label: 'Incompany Training', icon: <Briefcase className="h-5 w-5 mr-2" /> },
 ];
 
 export function Header() {
@@ -83,16 +84,16 @@ export function Header() {
                 <ChevronDown className="h-4 w-4 opacity-70" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
+            <DropdownMenuContent className="w-60"> {/* Adjusted width for longer item */}
               {opleidingsAanbodItems.map((item) => (
                 <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
                   <Link href={item.href} passHref legacyBehavior>
                     <a className={cn(
-                      'flex items-center w-full',
-                      pathname === item.href && 'font-semibold text-primary' // Actieve state
+                      'flex items-center w-full text-sm', // Ensured text-sm for consistency
+                      pathname === item.href && 'font-semibold text-primary' 
                     )}>
                       {item.icon}
-                      {item.label}
+                      <span className="ml-2">{item.label}</span> {/* Added ml-2 for spacing */}
                     </a>
                   </Link>
                 </DropdownMenuItem>
