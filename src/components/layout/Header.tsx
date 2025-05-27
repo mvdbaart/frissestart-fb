@@ -106,9 +106,11 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-           <Button 
-             asChild 
-             className="hidden sm:flex bg-primary text-white hover:bg-secondary hover:text-secondary-foreground shadow-md"
+           <Button
+             variant="default" // Expliciet de default variant
+             size="default"    // Expliciet de size
+             asChild
+             className="hidden sm:flex !text-white hover:!bg-secondary hover:!text-secondary-foreground shadow-md" // Gebruik ! om Tailwind utility classes te forceren
            >
             <Link href="/contact?subject=Offerte%20Aanvraag" passHref legacyBehavior>
               <a>Offerte Aanvragen</a>
@@ -145,9 +147,10 @@ export function Header() {
                     <NavLinkItem {...onzeInstructeursLink} isMobile />
                     <NavLinkItem {...contactLink} isMobile />
                   </nav>
-                   <Button 
-                    asChild 
-                    className="mt-4 bg-primary text-white hover:bg-secondary hover:text-secondary-foreground"
+                   <Button
+                    asChild
+                    variant="default"
+                    className="mt-4 !text-white hover:!bg-secondary hover:!text-secondary-foreground" 
                   >
                      <Link href="/contact?subject=Offerte%20Aanvraag" passHref legacyBehavior>
                        <a>Offerte Aanvragen</a>
