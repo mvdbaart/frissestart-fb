@@ -148,9 +148,9 @@ export default function OnzeInstructeursPage() {
           <p className="text-lg text-muted-foreground mb-8">
             Heb jij passie voor transport en logistiek en wil je jouw kennis en ervaring delen? FrisseStart is altijd op zoek naar enthousiaste en deskundige instructeurs om ons team te versterken.
           </p>
-          <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-white shadow-md transform hover:scale-105 transition-transform">
-            <Link href="/contact?subject=Sollicitatie%20Instructeur" passHref legacyBehavior>
-              <a>Solliciteer Nu <Send className="ml-2 h-5 w-5" /></a>
+          <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-white shadow-md transform hover:scale-105 transition-transform duration-300">
+            <Link href="/contact?subject=Sollicitatie%20Instructeur">
+              Solliciteer Nu <Send className="ml-2 h-5 w-5" />
             </Link>
           </Button>
         </div>
