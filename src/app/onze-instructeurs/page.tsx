@@ -15,7 +15,7 @@ const instructeurs = [
       "Logistieke trainingen ( Meenneem-, Hef en Reachtruck, Hoogwerker)",
       "Theorie trainingen ( VCA, Chauffeursdagen, Techniek en Veiligheid)"
     ],
-    afbeelding: "/images/marc-van-hoek.png" // Corrected to .png
+    afbeelding: "/images/marc-van-hoek.png"
   },
   {
     naam: "Paul van de Warrenburg",
@@ -27,7 +27,7 @@ const instructeurs = [
       "Logistieke trainingen ( Hef en Reachtruck, EPT, Stapelaar)",
       "Theorie trainingen ( Chauffeursdagen, Digitale tachograaf en boordcomputers)"
     ],
-    afbeelding: "/images/paul-van-de-warrenburg.png" // Corrected to .png
+    afbeelding: "/images/paul-van-de-warrenburg.png"
   },
   {
     naam: "Menno Gijsbers",
@@ -39,7 +39,7 @@ const instructeurs = [
       "Logistieke trainingen ( Hef en Reachtruck, EPT, Stapelaar)",
       "Theorie trainingen ( Chauffeursdagen )"
     ],
-    afbeelding: "/images/menno-gijsbers.png" // Corrected to .png
+    afbeelding: "/images/menno-gijsbers.png"
   },
   {
     naam: "Dorien Schriks",
@@ -50,7 +50,7 @@ const instructeurs = [
       "Logistieke trainingen ( Hef en Reachtruck, Hoogwerker, EPT, Stapelaar)",
       "Theorie trainingen ( Chauffeursdagen, Lading Zekeren )"
     ],
-    afbeelding: "/images/dorien-schriks.png" // Corrected to .png
+    afbeelding: "/images/dorien-schriks.png"
   },
   {
     naam: "Alain Soucy",
@@ -60,7 +60,7 @@ const instructeurs = [
       "Logistieke trainingen ( Hef en Reachtruck, EPT, Stapelaar)",
       "Theorie trainingen ( Chauffeursdagen, Actualisatie vakbekwaamheid )"
     ],
-    afbeelding: "/images/alain-soucy.png" // Corrected to .png
+    afbeelding: "/images/alain-soucy.png" 
   }
 ];
 
@@ -111,7 +111,7 @@ export default function OnzeInstructeursPage() {
               <CardHeader className="items-center text-center">
                 <div className="relative w-32 h-32 rounded-full overflow-hidden mx-auto mb-4 border-4 border-primary/50">
                   <Image
-                    src={instructeur.afbeelding} // Path should be correct now
+                    src={instructeur.afbeelding}
                     alt={`Foto van ${instructeur.naam}`}
                     layout="fill"
                     objectFit="cover"
