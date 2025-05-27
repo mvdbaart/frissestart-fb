@@ -2,7 +2,9 @@
 import { SectionContainer } from '@/components/ui/SectionContainer';
 import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import { CheckCircle, Users as UsersIcon, Truck, BookOpen as BookOpenIcon, Briefcase } from 'lucide-react';
+import { CheckCircle, Users as UsersIcon, Truck, BookOpen as BookOpenIcon, Briefcase, Send } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 const instructeurs = [
   {
@@ -60,7 +62,7 @@ const instructeurs = [
       "Logistieke trainingen ( Hef en Reachtruck, EPT, Stapelaar)",
       "Theorie trainingen ( Chauffeursdagen, Actualisatie vakbekwaamheid )"
     ],
-    afbeelding: "/images/alain-soucy.png" 
+    afbeelding: "/images/alain-soucy.png"
   }
 ];
 
@@ -134,6 +136,23 @@ export default function OnzeInstructeursPage() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      </SectionContainer>
+
+      <SectionContainer className="bg-accent/10 py-16 md:py-20">
+        <div className="text-center max-w-2xl mx-auto">
+          <UsersIcon className="h-16 w-16 text-primary mx-auto mb-6" />
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
+            Word Deel van Ons <span className="text-primary">Geweldige Team!</span>
+          </h2>
+          <p className="text-lg text-muted-foreground mb-8">
+            Heb jij passie voor transport en logistiek en wil je jouw kennis en ervaring delen? FrisseStart is altijd op zoek naar enthousiaste en deskundige instructeurs om ons team te versterken.
+          </p>
+          <Button size="lg" asChild className="bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-md transform hover:scale-105 transition-transform">
+            <Link href="/contact?subject=Sollicitatie%20Instructeur" passHref legacyBehavior>
+              <a>Solliciteer Nu <Send className="ml-2 h-5 w-5" /></a>
+            </Link>
+          </Button>
         </div>
       </SectionContainer>
     </>
