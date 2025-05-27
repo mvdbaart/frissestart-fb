@@ -13,7 +13,6 @@ import {
   MessageSquare,
   ChevronDown,
   Award,
-  HomeIcon,
   BookMarked,
   Briefcase,
   TagIcon,
@@ -27,7 +26,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const homeLink = { href: '/', label: 'Home', icon: <HomeIcon className="h-5 w-5 mr-2 md:mr-0" /> };
 const opleidingsAanbodLink = { label: 'Opleidingsaanbod', icon: <BookOpenText className="h-5 w-5" /> };
 const onzeInstructeursLink = { href: '/onze-instructeurs', label: 'Onze Instructeurs', icon: <Users className="h-5 w-5 mr-2 md:mr-0" /> };
 const overOnsLink = { href: '/over-ons', label: 'Over Ons', icon: <Info className="h-5 w-5 mr-2 md:mr-0" /> };
@@ -51,7 +49,7 @@ export function Header() {
           'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
           pathname === href ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
           isMobile && 'text-lg py-3 w-full',
-          !isMobile && 'md:px-2 lg:px-3', // Slightly reduced horizontal padding for desktop to accommodate more space between items
+          !isMobile && 'md:px-2 lg:px-3',
           className
         )}
       >
@@ -63,15 +61,13 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 max-w-screen-2xl items-center justify-between">
+      <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-6 md:px-8">
         <Link href="/" className="flex items-center gap-2" aria-label="FrisseStart Home">
           <Image src="/images/logo.png" alt="FrisseStart Logo" width={150} height={40} priority />
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-2 lg:gap-3"> {/* Adjusted gap here */}
-          <NavLinkItem {...homeLink} />
-          
+        <nav className="hidden md:flex items-center gap-2 lg:gap-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -79,7 +75,7 @@ export function Header() {
                 className={cn(
                   'flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
                   (pathname.startsWith('/opleidingsaanbod') || pathname.startsWith('/actie-voordeel')) ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground',
-                  'md:px-2 lg:px-3' // Consistent padding with NavLinkItem
+                  'md:px-2 lg:px-3'
                 )}
               >
                 <span className="md:mr-1 lg:mr-2">{opleidingsAanbodLink.icon}</span>
@@ -92,8 +88,8 @@ export function Header() {
                 <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
                   <Link href={item.href} passHref legacyBehavior>
                     <a className={cn(
-                      'flex items-center w-full text-sm py-2 px-3', // Ensure consistent padding for dropdown items
-                      pathname === item.href && 'bg-accent font-semibold text-accent-foreground' 
+                      'flex items-center w-full text-sm py-2 px-3',
+                      pathname === item.href && 'bg-accent font-semibold text-accent-foreground'
                     )}>
                       {item.icon}
                       <span className="ml-2">{item.label}</span>
@@ -103,16 +99,19 @@ export function Header() {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <NavLinkItem {...onzeInstructeursLink} />
+          
           <NavLinkItem {...overOnsLink} />
+          <NavLinkItem {...onzeInstructeursLink} />
           <NavLinkItem {...contactLink} />
         </nav>
 
         <div className="flex items-center gap-2">
-           <Button variant="default" asChild className="hidden sm:flex bg-primary hover:bg-primary/90 text-primary-foreground">
-            <Link href="/opleidingsaanbod" passHref legacyBehavior>
-              <a>Vind uw Cursus</a>
+           <Button 
+             asChild 
+             className="hidden sm:flex bg-primary text-white hover:bg-secondary hover:text-secondary-foreground shadow-md"
+           >
+            <Link href="/contact?subject=Offerte%20Aanvraag" passHref legacyBehavior>
+              <a>Offerte Aanvragen</a>
             </Link>
           </Button>
           {/* Mobile Navigation */}
@@ -130,8 +129,6 @@ export function Header() {
                     <Image src="/images/logo.png" alt="FrisseStart Logo" width={120} height={32} />
                   </Link>
                   <nav className="flex flex-col gap-1">
-                    <NavLinkItem {...homeLink} isMobile />
-                    
                     {/* Opleidingsaanbod items voor mobiel */}
                     <div className="mt-2">
                         <p className="px-3 py-2 text-lg font-medium text-muted-foreground flex items-center gap-2">
@@ -144,13 +141,16 @@ export function Header() {
                             ))}
                         </div>
                     </div>
-                    <NavLinkItem {...onzeInstructeursLink} isMobile />
                     <NavLinkItem {...overOnsLink} isMobile />
+                    <NavLinkItem {...onzeInstructeursLink} isMobile />
                     <NavLinkItem {...contactLink} isMobile />
                   </nav>
-                   <Button variant="default" asChild className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground">
-                     <Link href="/opleidingsaanbod" passHref legacyBehavior>
-                       <a>Vind uw Cursus</a>
+                   <Button 
+                    asChild 
+                    className="mt-4 bg-primary text-white hover:bg-secondary hover:text-secondary-foreground"
+                  >
+                     <Link href="/contact?subject=Offerte%20Aanvraag" passHref legacyBehavior>
+                       <a>Offerte Aanvragen</a>
                       </Link>
                    </Button>
                 </div>
