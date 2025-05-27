@@ -21,6 +21,7 @@ database-debug.log
 *.pem
 *.env.local
 .env*.local
+.env
 
 # Logs
 npm-debug.log*
