@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   Menu,
@@ -106,15 +106,18 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-           <Button
-             size="default"
-             asChild
-             className="hidden sm:flex !bg-secondary dark:!bg-primary !text-white hover:!bg-secondary/90 dark:hover:!bg-primary/90 shadow-md transform hover:scale-105 transition-transform duration-300"
-           >
-            <Link href="/contact?subject=Offerte%20Aanvraag" passHref legacyBehavior>
-              <a>Offerte Aanvragen</a>
-            </Link>
-          </Button>
+           <Link href="/contact?subject=Offerte%20Aanvraag" passHref legacyBehavior>
+             <a
+               className={cn(
+                buttonVariants({ size: 'default' }),
+                '!bg-secondary !text-secondary-foreground',
+                'hover:!bg-secondary/90',
+                'hidden sm:flex shadow-md transform hover:scale-105 transition-transform duration-300'
+               )}
+             >
+               Offerte Aanvragen
+             </a>
+           </Link>
           {/* Mobile Navigation */}
           <div className="md:hidden">
             <Sheet>
@@ -130,7 +133,6 @@ export function Header() {
                     <Image src="/images/logo.png" alt="FrisseStart Logo" width={120} height={32} />
                   </Link>
                   <nav className="flex flex-col gap-1">
-                    {/* Opleidingsaanbod items voor mobiel */}
                     <div className="mt-2">
                         <p className="px-3 py-2 text-lg font-medium text-muted-foreground flex items-center gap-2">
                             {opleidingsAanbodLink.icon}
@@ -146,11 +148,18 @@ export function Header() {
                     <NavLinkItem {...onzeInstructeursLink} isMobile />
                     <NavLinkItem {...contactLink} isMobile />
                   </nav>
-                  <Button size="lg" asChild className="!bg-secondary dark:!bg-primary !text-white hover:!bg-secondary/90 dark:hover:!bg-primary/90 transform hover:scale-105 transition-transform duration-300">
-                    <Link href="/contact?subject=Offerte%20Aanvraag" passHref legacyBehavior>
-                      <a>Offerte Aanvragen</a>
-                    </Link>
-                  </Button>
+                  <Link href="/contact?subject=Offerte%20Aanvraag" passHref legacyBehavior>
+                    <a
+                      className={cn(
+                        buttonVariants({ size: 'lg' }),
+                        '!bg-secondary !text-secondary-foreground',
+                        'hover:!bg-secondary/90',
+                        'transform hover:scale-105 transition-transform duration-300 w-full text-center'
+                      )}
+                    >
+                      Offerte Aanvragen
+                    </a>
+                  </Link>
                 </div>
               </SheetContent>
             </Sheet>
