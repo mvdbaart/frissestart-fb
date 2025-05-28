@@ -1,8 +1,9 @@
 
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button'; // Ensure buttonVariants is imported
 import { SectionContainer } from '@/components/ui/SectionContainer';
 import Link from 'next/link';
 import Image from 'next/image';
+import { cn } from '@/lib/utils'; // Ensure cn is imported
 
 export function HeroSection() {
   return (
@@ -12,7 +13,7 @@ export function HeroSection() {
         alt="Frisse Start Header Achtergrond"
         layout="fill"
         objectFit="cover"
-        objectPosition="center" 
+        objectPosition="center"
         quality={90}
         priority
         className="-z-10"
@@ -29,29 +30,33 @@ export function HeroSection() {
               Ontdek praktijkgerichte cursussen die u voorbereiden op de banen van de toekomst. Bij FrisseStart investeren we in uw groei.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-              <Button
-                size="lg"
-                asChild
-                variant="default" // Primary color (orange)
-                className="text-white hover:bg-primary/90 shadow-lg transform hover:scale-105 transition-transform duration-300"
-              >
-                <Link href="/opleidingsaanbod" passHref legacyBehavior>
-                  <a>Onze opleidingen</a>
-                </Link>
-              </Button>
-              <Button
-                size="lg"
-                asChild
-                variant="secondary" // Secondary color (green)
-                className="shadow-lg transform hover:scale-105 transition-transform duration-300 hover:bg-secondary/90" // text-secondary-foreground is already white by default
-              >
-                <Link href="/contact?subject=Certificeringsscan%20Aanvraag" passHref legacyBehavior>
-                  <a>Vrijblijvende werknemers certificeringsscan</a>
-                </Link>
-              </Button>
+              <Link href="/opleidingsaanbod" passHref legacyBehavior>
+                <a
+                  className={cn(
+                    buttonVariants({ size: "lg" }), // Base styles and size
+                    "!bg-primary !text-white", // Primary color, white text (important)
+                    "hover:!bg-primary/90", // Hover effect (important)
+                    "shadow-lg transform hover:scale-105 transition-transform duration-300" // Other styles
+                  )}
+                >
+                  Onze opleidingen
+                </a>
+              </Link>
+              <Link href="/contact?subject=Certificeringsscan%20Aanvraag" passHref legacyBehavior>
+                <a
+                  className={cn(
+                    buttonVariants({ size: "lg" }), // Base styles and size
+                    "!bg-secondary !text-secondary-foreground", // Secondary color, secondary foreground (important)
+                    "hover:!bg-secondary/90", // Hover effect (important)
+                    "shadow-lg transform hover:scale-105 transition-transform duration-300" // Other styles
+                  )}
+                >
+                  Vrijblijvende werknemers certificeringsscan
+                </a>
+              </Link>
             </div>
           </div>
-          <div className="hidden md:block md:col-span-1"> 
+          <div className="hidden md:block md:col-span-1">
           </div>
         </div>
       </div>
