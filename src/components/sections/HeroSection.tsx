@@ -1,19 +1,19 @@
 
-import { buttonVariants } from '@/components/ui/button'; // Ensure buttonVariants is imported
+import { buttonVariants } from '@/components/ui/button';
 import { SectionContainer } from '@/components/ui/SectionContainer';
 import Link from 'next/link';
 import Image from 'next/image';
-import { cn } from '@/lib/utils'; // Ensure cn is imported
+import { cn } from '@/lib/utils';
 
 export function HeroSection() {
   return (
-    <SectionContainer className="relative pt-16 md:pt-20 lg:pt-24 pb-12 md:pb-16 lg:pb-20 h-[33vh] flex items-center justify-center text-center md:text-left text-white">
+    <SectionContainer className="relative pt-12 pb-8 md:pt-20 lg:pt-24 md:pb-16 lg:pb-20 h-[33vh] flex items-center justify-center text-center md:text-left text-white">
       <Image
         src="/images/frissestart-header.jpg"
         alt="Frisse Start Header Achtergrond"
         layout="fill"
         objectFit="cover"
-        objectPosition="center"
+        objectPosition="center top" // Changed to "center top"
         quality={90}
         priority
         className="-z-10"
@@ -23,20 +23,19 @@ export function HeroSection() {
       <div className="relative z-10 container max-w-screen-xl">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div className="md:col-span-1">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-4 sm:mb-6">
             Dé opleider voor transport en logistiek voor <span className="text-primary">professionals</span> én <span className="text-primary">bedrijven</span>.
             </h1>
-            <p className="text-lg sm:text-xl text-gray-200 mb-8 max-w-xl mx-auto md:mx-0">
+            <p className="text-base sm:text-lg text-gray-200 mb-6 sm:mb-8 max-w-xl mx-auto md:mx-0">
               Ontdek praktijkgerichte cursussen die u voorbereiden op de banen van de toekomst. Bij FrisseStart investeren we in uw groei.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start">
               <Link href="/opleidingsaanbod" passHref legacyBehavior>
                 <a
                   className={cn(
-                    buttonVariants({ size: "lg" }), // Base styles and size
-                    "!bg-primary !text-white", // Primary color, white text (important)
-                    "hover:!bg-primary/90", // Hover effect (important)
-                    "shadow-lg transform hover:scale-105 transition-transform duration-300" // Other styles
+                    buttonVariants({ size: "lg" }),
+                    "!bg-primary !text-white hover:!bg-primary/90",
+                    "shadow-lg transform hover:scale-105 transition-transform duration-300 text-sm sm:text-base px-4 sm:px-8"
                   )}
                 >
                   Onze opleidingen
@@ -45,10 +44,9 @@ export function HeroSection() {
               <Link href="/contact?subject=Certificeringsscan%20Aanvraag" passHref legacyBehavior>
                 <a
                   className={cn(
-                    buttonVariants({ size: "lg" }), // Base styles and size
-                    "!bg-secondary !text-secondary-foreground", // Secondary color, secondary foreground (important)
-                    "hover:!bg-secondary/90", // Hover effect (important)
-                    "shadow-lg transform hover:scale-105 transition-transform duration-300" // Other styles
+                    buttonVariants({ size: "lg", variant: "secondary" }),
+                     "!bg-secondary !text-secondary-foreground hover:!bg-secondary/90",
+                    "shadow-lg transform hover:scale-105 transition-transform duration-300 text-sm sm:text-base px-4 sm:px-8"
                   )}
                 >
                   Vrijblijvende werknemers certificeringsscan
@@ -57,6 +55,7 @@ export function HeroSection() {
             </div>
           </div>
           <div className="hidden md:block md:col-span-1">
+            {/* This column is intentionally empty for layout purposes on larger screens */}
           </div>
         </div>
       </div>
