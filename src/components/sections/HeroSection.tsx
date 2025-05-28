@@ -12,7 +12,7 @@ export function HeroSection() {
         alt="Frisse Start Header Achtergrond"
         layout="fill"
         objectFit="cover"
-        objectPosition="center"
+        objectPosition="center" 
         quality={90}
         priority
         className="-z-10"
@@ -31,12 +31,12 @@ export function HeroSection() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
               <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transform hover:scale-105 transition-transform duration-300">
                 <Link href="/opleidingsaanbod" passHref legacyBehavior>
-                  <a>Vind uw Perfecte Cursus</a>
+                  <a>Onze opleidingen</a>
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" asChild className="shadow-lg transform hover:scale-105 transition-transform duration-300 border-white text-white hover:bg-white hover:text-primary">
-                <Link href="/opleidingsaanbod" passHref legacyBehavior>
-                  <a>Ontdek Alle Cursussen</a>
+              <Button size="lg" asChild className="bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-lg transform hover:scale-105 transition-transform duration-300">
+                <Link href="/contact?subject=Certificeringsscan%20Aanvraag" passHref legacyBehavior>
+                  <a>Vrijblijvende werknemers certificeringsscan</a>
                 </Link>
               </Button>
             </div>
