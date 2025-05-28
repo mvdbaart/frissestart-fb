@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 export function HeroSection() {
   return (
-    <SectionContainer className="relative pt-20 md:pt-24 lg:pt-32 min-h-[calc(100vh-4rem)] flex items-center justify-center text-center md:text-left text-white">
+    <SectionContainer className="relative pt-16 md:pt-20 lg:pt-24 pb-12 md:pb-16 lg:pb-20 h-[33vh] flex items-center justify-center text-center md:text-left text-white">
       <Image
         src="/images/frissestart-header.jpg"
         alt="Frisse Start Header Achtergrond"
