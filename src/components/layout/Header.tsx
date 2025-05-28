@@ -16,6 +16,7 @@ import {
   BookMarked,
   Briefcase,
   TagIcon,
+  Phone,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -31,7 +32,6 @@ const onzeInstructeursLink = { href: '/onze-instructeurs', label: 'Onze Instruct
 const overOnsLink = { href: '/over-ons', label: 'Over Ons', icon: <Info className="h-5 w-5 mr-2 md:mr-0" /> };
 const contactLink = { href: '/contact', label: 'Contact', icon: <MessageSquare className="h-5 w-5 mr-2 md:mr-0" /> };
 
-
 const opleidingsAanbodItems = [
   { href: '/opleidingsaanbod', label: 'Alle Opleidingen', icon: <BookMarked className="h-5 w-5 mr-2" /> },
   { href: '/opleidingsaanbod/intern-certificeren', label: 'Intern Certificeren', icon: <Award className="h-5 w-5 mr-2" /> },
@@ -39,23 +39,23 @@ const opleidingsAanbodItems = [
   { href: '/actie-voordeel', label: 'Actie Voordeel', icon: <TagIcon className="h-5 w-5 mr-2" /> },
 ];
 
+
 export function Header() {
   const pathname = usePathname();
 
   const NavLinkItem = ({ href, label, icon, isMobile = false, className }: { href: string; label: string; icon?: React.ReactNode, isMobile?: boolean, className?: string }) => (
-    <Link href={href} passHref legacyBehavior>
-      <a
-        className={cn(
-          'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
-          pathname === href ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
-          isMobile && 'text-lg py-3 w-full',
-          !isMobile && 'md:px-2 lg:px-3',
-          className
-        )}
-      >
-        {icon && <span className={cn(isMobile ? 'mr-2' : 'md:mr-1 lg:mr-2')}>{icon}</span>}
-        <span className={cn(isMobile ? '' : 'group-data-[collapsible=icon]:hidden group-data-[state=expanded]:md:inline')}>{label}</span>
-      </a>
+    <Link
+      href={href}
+      className={cn(
+        'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
+        pathname === href ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+        isMobile && 'text-lg py-3 w-full',
+        !isMobile && 'md:px-2 lg:px-3',
+        className
+      )}
+    >
+      {icon && <span className={cn(isMobile ? 'mr-2' : 'md:mr-1 lg:mr-2')}>{icon}</span>}
+      <span className={cn(isMobile ? '' : 'group-data-[collapsible=icon]:hidden group-data-[state=expanded]:md:inline')}>{label}</span>
     </Link>
   );
 
@@ -74,7 +74,7 @@ export function Header() {
                 variant="ghost"
                 className={cn(
                   'flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
-                  (pathname.startsWith('/opleidingsaanbod') || pathname.startsWith('/actie-voordeel')) ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground',
+                  (pathname.startsWith('/opleidingsaanbod') || pathname === '/actie-voordeel') ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground',
                   'md:px-2 lg:px-3'
                 )}
               >
@@ -86,14 +86,15 @@ export function Header() {
             <DropdownMenuContent className="w-60">
               {opleidingsAanbodItems.map((item) => (
                 <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
-                  <Link href={item.href} passHref legacyBehavior>
-                    <a className={cn(
+                  <Link
+                    href={item.href}
+                    className={cn(
                       'flex items-center w-full text-sm py-2 px-3',
                       pathname === item.href && 'bg-accent font-semibold text-accent-foreground'
-                    )}>
-                      {item.icon}
-                      <span className="ml-2">{item.label}</span>
-                    </a>
+                    )}
+                  >
+                    {item.icon}
+                    <span className="ml-2">{item.label}</span>
                   </Link>
                 </DropdownMenuItem>
               ))}
@@ -106,18 +107,27 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-           <Link href="/contact?subject=Offerte%20Aanvraag" passHref legacyBehavior>
-             <a
-               className={cn(
-                buttonVariants({ size: 'default' }),
-                '!bg-secondary !text-secondary-foreground',
-                'hover:!bg-secondary/90',
+           <a
+             href="tel:+31408459091"
+             className={cn(
+              buttonVariants({ size: 'default', variant: 'secondary' }),
+              '!bg-secondary !text-secondary-foreground hover:!bg-secondary/90',
+              'hidden sm:flex items-center gap-2 shadow-md transform hover:scale-105 transition-transform duration-300'
+             )}
+           >
+             <Phone className="h-4 w-4" />
+             040 845 90 91
+           </a>
+           <Link
+              href="/contact?subject=Offerte%20Aanvraag"
+              className={cn(
+                buttonVariants({ size: 'default', variant: 'default' }),
+                '!bg-primary !text-white hover:!bg-primary/90',
                 'hidden sm:flex shadow-md transform hover:scale-105 transition-transform duration-300'
-               )}
-             >
-               Offerte Aanvragen
-             </a>
-           </Link>
+              )}
+            >
+              Offerte Aanvragen
+            </Link>
           {/* Mobile Navigation */}
           <div className="md:hidden">
             <Sheet>
@@ -148,18 +158,27 @@ export function Header() {
                     <NavLinkItem {...onzeInstructeursLink} isMobile />
                     <NavLinkItem {...contactLink} isMobile />
                   </nav>
-                  <Link href="/contact?subject=Offerte%20Aanvraag" passHref legacyBehavior>
-                    <a
+                  <a
+                     href="tel:+31408459091"
+                     className={cn(
+                      buttonVariants({ size: 'lg', variant: 'secondary' }),
+                      '!bg-secondary !text-secondary-foreground hover:!bg-secondary/90',
+                      'transform hover:scale-105 transition-transform duration-300 w-full text-center flex items-center justify-center gap-2'
+                     )}
+                   >
+                     <Phone className="h-5 w-5" />
+                     040 845 90 91
+                   </a>
+                   <Link
+                      href="/contact?subject=Offerte%20Aanvraag"
                       className={cn(
-                        buttonVariants({ size: 'lg' }),
-                        '!bg-secondary !text-secondary-foreground',
-                        'hover:!bg-secondary/90',
+                        buttonVariants({ size: 'lg', variant: 'default' }),
+                        '!bg-primary !text-white hover:!bg-primary/90',
                         'transform hover:scale-105 transition-transform duration-300 w-full text-center'
                       )}
                     >
                       Offerte Aanvragen
-                    </a>
-                  </Link>
+                    </Link>
                 </div>
               </SheetContent>
             </Sheet>
