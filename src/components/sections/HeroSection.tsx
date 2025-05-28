@@ -29,12 +29,22 @@ export function HeroSection() {
               Ontdek praktijkgerichte cursussen die u voorbereiden op de banen van de toekomst. Bij FrisseStart investeren we in uw groei.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-              <Button size="lg" asChild className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg transform hover:scale-105 transition-transform duration-300">
+              <Button
+                size="lg"
+                asChild
+                variant="default" // Primary color (orange)
+                className="text-white hover:bg-primary/90 shadow-lg transform hover:scale-105 transition-transform duration-300"
+              >
                 <Link href="/opleidingsaanbod" passHref legacyBehavior>
                   <a>Onze opleidingen</a>
                 </Link>
               </Button>
-              <Button size="lg" asChild className="bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-lg transform hover:scale-105 transition-transform duration-300">
+              <Button
+                size="lg"
+                asChild
+                variant="secondary" // Secondary color (green)
+                className="shadow-lg transform hover:scale-105 transition-transform duration-300 hover:bg-secondary/90" // text-secondary-foreground is already white by default
+              >
                 <Link href="/contact?subject=Certificeringsscan%20Aanvraag" passHref legacyBehavior>
                   <a>Vrijblijvende werknemers certificeringsscan</a>
                 </Link>
