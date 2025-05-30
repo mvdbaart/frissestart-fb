@@ -3,12 +3,12 @@ import { HeroSection } from '@/components/sections/HeroSection';
 import { AboutSection } from '@/components/sections/AboutSection';
 import { FeaturesSection } from '@/components/sections/FeaturesSection';
 import { SectionContainer } from '@/components/ui/SectionContainer';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Star, Building, Users } from 'lucide-react';
-import { cn } from '@/lib/utils'; // Deze import is cruciaal
+import { cn } from '@/lib/utils';
 
 // Nieuwe TrustBlock component
 function TrustBlock() {
@@ -114,8 +114,8 @@ function TestimonialsSection() {
 
 function CtaSection() {
   return (
-    <SectionContainer className="bg-gradient-to-r from-primary to-secondary text-primary-foreground">
-      <div className="text-center py-12 px-6 rounded-xl shadow-2xl">
+    <SectionContainer className="bg-secondary text-secondary-foreground">
+      <div className="text-center py-12 px-6 rounded-xl">
         <h2 className="text-3xl md:text-4xl font-bold mb-6">
           Klaar om uw Toekomst te Starten?
         </h2>
@@ -125,23 +125,27 @@ function CtaSection() {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             href="/opleidingsaanbod"
+            passHref
+            legacyBehavior
             className={cn(
-              buttonVariants({ size: "lg" }),
-              "!bg-primary-foreground !text-primary hover:!bg-primary-foreground/90 !border-primary-foreground hover:!border-primary-foreground/90",
-              "shadow-lg transform hover:scale-105 transition-transform duration-300"
+              buttonVariants({ size: 'lg', variant: 'default' }),
+              '!text-white !bg-primary hover:!bg-primary/90', 
+              'shadow-lg transform hover:scale-105 transition-transform duration-300'
             )}
           >
-            Bekijk Alle Cursussen
+            <a>Bekijk Alle Cursussen</a>
           </Link>
           <Link
             href="/contact"
+            passHref
+            legacyBehavior
             className={cn(
-              buttonVariants({ size: "lg", variant: "ghost" }),
-              "text-primary-foreground hover:bg-white/20 hover:text-primary-foreground",
-              "transform hover:scale-105 transition-transform duration-300"
+              buttonVariants({ size: 'lg', variant: 'ghost' }),
+              'text-white hover:bg-white/20 hover:text-white',
+              'transform hover:scale-105 transition-transform duration-300'
             )}
           >
-            Neem Contact Op
+            <a>Neem Contact Op</a>
           </Link>
         </div>
       </div>
@@ -162,3 +166,4 @@ export default function HomePage() {
     </>
   );
 }
+
