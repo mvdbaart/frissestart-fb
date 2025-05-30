@@ -1,36 +1,71 @@
 
-
 import { HeroSection } from '@/components/sections/HeroSection';
 import { AboutSection } from '@/components/sections/AboutSection';
 import { FeaturesSection } from '@/components/sections/FeaturesSection';
-import { CourseRecommender } from '@/components/CourseRecommender';
 import { SectionContainer } from '@/components/ui/SectionContainer';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Star, Building, Users } from 'lucide-react';
+import { cn } from '@/lib/utils'; // Deze import is cruciaal
 
+// Nieuwe TrustBlock component
+function TrustBlock() {
+  return (
+    <SectionContainer id="trust-block" className="bg-muted/50">
+      <div className="text-center mb-12">
+        <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+          Gebouwd op <span className="text-primary">Vertrouwen & Expertise</span>
+        </h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center max-w-4xl mx-auto">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <CardContent className="pt-6 flex flex-col items-center text-center">
+            <Users className="h-12 w-12 text-primary mb-4" />
+            <p className="text-2xl font-semibold text-foreground">Al &gt;3.500 professionals opgeleid</p>
+          </CardContent>
+        </Card>
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+          <CardContent className="pt-6 flex flex-col items-center text-center">
+            <Building className="h-12 w-12 text-primary mb-4" />
+            <p className="text-2xl font-semibold text-foreground mb-4">Erkend door</p>
+            <div className="flex justify-center items-center gap-6">
+              <div className="relative h-12 w-24">
+                <Image src="/images/soob-logo.png" alt="SOOB Logo" layout="fill" objectFit="contain" data-ai-hint="SOOB logo" />
+              </div>
+              <div className="relative h-12 w-24">
+                <Image src="/images/tln-logo.png" alt="TLN Logo" layout="fill" objectFit="contain" data-ai-hint="TLN logo" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </SectionContainer>
+  );
+}
 
-// Placeholder for actual testimonial data
 const testimonials = [
   {
     quote: "Dankzij FrisseStart heb ik mijn carrière een nieuwe impuls kunnen geven. De cursus was praktijkgericht en de docenten super behulpzaam!",
     name: "Anna de Vries",
     role: "Webdeveloper",
-    avatar: "https://placehold.co/100x100.png"
+    avatar: "https://placehold.co/100x100.png",
+    rating: 5,
   },
   {
     quote: "De flexibiliteit van de online modules paste perfect bij mijn drukke schema. Ik heb enorm veel geleerd en pas dit nu dagelijks toe in mijn werk.",
     name: "Bas Jansen",
     role: "Data Analist",
-    avatar: "https://placehold.co/100x100.png"
+    avatar: "https://placehold.co/100x100.png",
+    rating: 4,
   },
   {
     quote: "Een absolute aanrader! FrisseStart biedt kwalitatieve opleidingen die je echt voorbereiden op de toekomst.",
     name: "Sophie Meijer",
     role: "UX Designer",
-    avatar: "https://placehold.co/100x100.png"
+    avatar: "https://placehold.co/100x100.png",
+    rating: 5,
   }
 ];
 
@@ -49,6 +84,17 @@ function TestimonialsSection() {
         {testimonials.map((testimonial, index) => (
           <Card key={index} className="bg-card shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
             <CardContent className="pt-6 flex-grow">
+              <div className="flex mb-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className={cn(
+                      "h-5 w-5",
+                      i < testimonial.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+                    )}
+                  />
+                ))}
+              </div>
               <p className="text-muted-foreground italic mb-4">"{testimonial.quote}"</p>
             </CardContent>
             <CardFooter className="flex items-center gap-4 border-t pt-4 mt-auto">
@@ -77,16 +123,26 @@ function CtaSection() {
           Neem de volgende stap in uw carrière. Ontdek onze cursussen of vraag een persoonlijk adviesgesprek aan.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" variant="outline" asChild className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 border-primary-foreground hover:border-primary-foreground/90 shadow-lg transform hover:scale-105 transition-transform duration-300">
-            <Link href="/opleidingsaanbod" passHref legacyBehavior>
-              <a>Bekijk Alle Cursussen</a>
-            </Link>
-          </Button>
-          <Button size="lg" variant="ghost" asChild className="text-primary-foreground hover:bg-white/20 hover:text-primary-foreground transform hover:scale-105 transition-transform duration-300">
-            <Link href="/contact" passHref legacyBehavior>
-              <a>Neem Contact Op</a>
-            </Link>
-          </Button>
+          <Link
+            href="/opleidingsaanbod"
+            className={cn(
+              buttonVariants({ size: "lg" }),
+              "!bg-primary-foreground !text-primary hover:!bg-primary-foreground/90 !border-primary-foreground hover:!border-primary-foreground/90",
+              "shadow-lg transform hover:scale-105 transition-transform duration-300"
+            )}
+          >
+            Bekijk Alle Cursussen
+          </Link>
+          <Link
+            href="/contact"
+            className={cn(
+              buttonVariants({ size: "lg", variant: "ghost" }),
+              "text-primary-foreground hover:bg-white/20 hover:text-primary-foreground",
+              "transform hover:scale-105 transition-transform duration-300"
+            )}
+          >
+            Neem Contact Op
+          </Link>
         </div>
       </div>
     </SectionContainer>
@@ -100,7 +156,7 @@ export default function HomePage() {
       <HeroSection />
       <AboutSection />
       <FeaturesSection />
-      <CourseRecommender />
+      <TrustBlock />
       <TestimonialsSection />
       <CtaSection />
     </>
