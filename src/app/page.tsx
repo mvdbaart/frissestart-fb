@@ -127,25 +127,31 @@ function CtaSection() {
             href="/opleidingsaanbod"
             passHref
             legacyBehavior
-            className={cn(
-              buttonVariants({ size: 'lg' }),
-              '!bg-primary hover:!bg-primary/90 !text-white',
-              'shadow-lg transform hover:scale-105 transition-transform duration-300'
-            )}
           >
-            <a>Bekijk Alle Cursussen</a>
+            <a
+              className={cn(
+                buttonVariants({ size: 'lg' }), // Basis knopgrootte en padding
+                '!bg-primary !text-white hover:!bg-primary/90', // Primaire kleuren, witte tekst
+                'shadow-lg transform hover:scale-105 transition-transform duration-300 text-sm sm:text-base px-4 sm:px-8'
+              )}
+            >
+            Bekijk Alle Cursussen
+            </a>
           </Link>
           <Link
-            href="/contact"
+            href="/contact?subject=Adviesgesprek%20Aanvraag"
             passHref
             legacyBehavior
-            className={cn(
-              buttonVariants({ size: 'lg', variant: 'ghost' }),
-              'text-white hover:bg-white/20 hover:text-white',
-              'transform hover:scale-105 transition-transform duration-300'
-            )}
           >
-            <a>Neem Contact Op</a>
+            <a
+            className={cn(
+              buttonVariants({ size: 'lg', variant: 'ghost' }), // Basis ghost styling
+              '!text-white hover:!bg-white/20 hover:!text-white', // Witte tekst voor contrast op groene bg
+              'shadow-lg transform hover:scale-105 transition-transform duration-300 text-sm sm:text-base px-4 sm:px-8'
+            )}
+            >
+            Neem Contact Op
+            </a>
           </Link>
         </div>
       </div>
@@ -166,4 +172,3 @@ export default function HomePage() {
     </>
   );
 }
-
