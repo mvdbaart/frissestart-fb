@@ -2,15 +2,16 @@
 import { HeroSection } from '@/components/sections/HeroSection';
 import { AboutSection } from '@/components/sections/AboutSection';
 import { FeaturesSection } from '@/components/sections/FeaturesSection';
+import { PopularCoursesSection } from '@/components/sections/PopularCoursesSection'; // Nieuwe import
 import { SectionContainer } from '@/components/ui/SectionContainer';
 import { Button, buttonVariants } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Star, Building, Users } from 'lucide-react';
+import { CheckCircle, Star, Building, Users, Phone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Nieuwe TrustBlock component
+// TrustBlock component (al aanwezig)
 function TrustBlock() {
   return (
     <SectionContainer id="trust-block" className="bg-muted/50">
@@ -130,8 +131,8 @@ function CtaSection() {
           >
             <a
               className={cn(
-                buttonVariants({ size: 'lg' }), // Basis knopgrootte en padding
-                '!bg-primary !text-white hover:!bg-primary/90', // Primaire kleuren, witte tekst
+                buttonVariants({ size: 'lg' }),
+                '!bg-primary !text-white hover:!bg-primary/90',
                 'shadow-lg transform hover:scale-105 transition-transform duration-300 text-sm sm:text-base px-4 sm:px-8'
               )}
             >
@@ -145,8 +146,8 @@ function CtaSection() {
           >
             <a
             className={cn(
-              buttonVariants({ size: 'lg', variant: 'ghost' }), // Basis ghost styling
-              '!text-white hover:!bg-white/20 hover:!text-white', // Witte tekst voor contrast op groene bg
+              buttonVariants({ size: 'lg', variant: 'ghost' }),
+              '!text-white hover:!bg-white/20 hover:!text-white',
               'shadow-lg transform hover:scale-105 transition-transform duration-300 text-sm sm:text-base px-4 sm:px-8'
             )}
             >
@@ -166,6 +167,7 @@ export default function HomePage() {
       <HeroSection />
       <AboutSection />
       <FeaturesSection />
+      <PopularCoursesSection /> {/* Nieuwe sectie hier toegevoegd */}
       <TrustBlock />
       <TestimonialsSection />
       <CtaSection />
