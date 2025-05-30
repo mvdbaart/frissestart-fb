@@ -3,7 +3,7 @@ import { HeroSection } from '@/components/sections/HeroSection';
 import { AboutSection } from '@/components/sections/AboutSection';
 import { FeaturesSection } from '@/components/sections/FeaturesSection';
 import { SectionContainer } from '@/components/ui/SectionContainer';
-import { buttonVariants } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -128,8 +128,8 @@ function CtaSection() {
             passHref
             legacyBehavior
             className={cn(
-              buttonVariants({ size: 'lg', variant: 'default' }),
-              '!text-white !bg-primary hover:!bg-primary/90', 
+              buttonVariants({ size: 'lg' }),
+              '!bg-primary hover:!bg-primary/90 !text-white',
               'shadow-lg transform hover:scale-105 transition-transform duration-300'
             )}
           >
