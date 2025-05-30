@@ -13,7 +13,7 @@ export function HeroSection() {
         alt="Frisse Start Header Achtergrond"
         layout="fill"
         objectFit="cover"
-        objectPosition="center top" // Changed to "center top"
+        objectPosition="center top"
         quality={90}
         priority
         className="-z-10"
@@ -27,29 +27,29 @@ export function HeroSection() {
             Dé opleider voor transport en logistiek voor <span className="text-primary">professionals</span> én <span className="text-primary">bedrijven</span>.
             </h1>
             <p className="text-base sm:text-lg text-gray-200 mb-6 sm:mb-8 max-w-xl mx-auto md:mx-0">
-              Ontdek praktijkgerichte cursussen die u voorbereiden op de banen van de toekomst. Bij FrisseStart investeren we in uw groei.
+              Of je nu zelf aan de slag wilt in de sector of jouw personeel wilt bijscholen: Frisse Start biedt erkende opleidingen, persoonlijke begeleiding en 100% SOOB-subsidie. Snel starten, alles geregeld.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start">
               <Link href="/opleidingsaanbod" passHref legacyBehavior>
                 <a
                   className={cn(
-                    buttonVariants({ size: "lg" }),
-                    "!bg-primary !text-white hover:!bg-primary/90",
-                    "shadow-lg transform hover:scale-105 transition-transform duration-300 text-sm sm:text-base px-4 sm:px-8"
+                    buttonVariants({ size: 'lg' }),
+                    '!bg-primary !text-white hover:!bg-primary/90',
+                    'shadow-lg transform hover:scale-105 transition-transform duration-300 text-sm sm:text-base px-4 sm:px-8'
                   )}
                 >
-                  Onze opleidingen
+                  Bekijk opleidingen
                 </a>
               </Link>
-              <Link href="/contact?subject=Certificeringsscan%20Aanvraag" passHref legacyBehavior>
+              <Link href="/opleidingsaanbod/incompany-training" passHref legacyBehavior>
                 <a
                   className={cn(
-                    buttonVariants({ size: "lg", variant: "secondary" }),
-                     "!bg-secondary !text-secondary-foreground hover:!bg-secondary/90",
-                    "shadow-lg transform hover:scale-105 transition-transform duration-300 text-sm sm:text-base px-4 sm:px-8"
+                    buttonVariants({ size: 'lg', variant: 'secondary' }),
+                     '!bg-secondary !text-secondary-foreground hover:!bg-secondary/90',
+                    'shadow-lg transform hover:scale-105 transition-transform duration-300 text-sm sm:text-base px-4 sm:px-8'
                   )}
                 >
-                  Vrijblijvende werknemers certificeringsscan
+                  Opleidingen voor bedrijven
                 </a>
               </Link>
             </div>

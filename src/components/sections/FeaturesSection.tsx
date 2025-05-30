@@ -22,7 +22,7 @@ const newFeatures = [
   {
     icon: <CheckCircle className="h-8 w-8 text-primary" />,
     title: "Direct Geregeld",
-    description: "Wij regelen alles voor je, van inschrijving tot subsidieaanvraag. Geen administratieve rompslomp.",
+    description: "Jij focust op je opleiding, wij doen de rest, van inschrijving tot subsidieaanvraag. Geen administratieve rompslomp.",
   },
 ];
 
