@@ -5,7 +5,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Review, SubRatings } from '@/types/reviews';
 import { ReviewCard } from './ReviewCard';
 import { Button } from '@/components/ui/button';
-import { Loader2, PlusCircle, Send, Star as StarIcon } from 'lucide-react';
+import { Loader2, PlusCircle, Send, Star as StarIcon, DatabaseZap, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,8 +16,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { db } from '@/lib/firebase'; // Importeer db instance
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'; // Firestore functies
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { seedDatabaseWithJsonReviews } from '@/app/reviews/actions'; // Import de server action
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
+
 
 interface ReviewsClientViewProps {
   initialReviews: Review[];
@@ -98,21 +101,26 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
   const handleFormSubmit: SubmitHandler<ReviewFormData> = async (data) => {
     setIsSubmittingReview(true);
     try {
-      const reviewDataToSave: Omit<Review, 'id'> = {
+      const subratingsToSave: Partial<SubRatings> = {};
+      if (data.subratings) {
+        for (const key in data.subratings) {
+          const typedKey = key as keyof SubRatings;
+          if (data.subratings[typedKey] && data.subratings[typedKey]! > 0) {
+            subratingsToSave[typedKey] = (data.subratings[typedKey] || 0) * 2; // Schaal 1-5 naar 1-10
+          }
+        }
+      }
+
+      const reviewDataToSave: Omit<Review, 'id' > = {
         reviewer_name: data.reviewer_name,
         reviewer_type: data.reviewer_type,
         title: data.title,
         review_text: data.review_text,
-        rating: data.rating * 2, // Converteer 1-5 sterren naar 1-10 schaal
-        date: new Date().toISOString().split('T')[0], // ISO string YYYY-MM-DD
-        createdAt: serverTimestamp(), // Firestore server timestamp
-        recommended: data.rating >= 4, // Bepaal 'recommended' op basis van 4 of 5 sterren
-        subratings: data.subratings ? {
-          Begeleiding: data.subratings.Begeleiding ? data.subratings.Begeleiding * 2 : undefined,
-          "Heldere communicatie": data.subratings["Heldere communicatie"] ? data.subratings["Heldere communicatie"] * 2 : undefined,
-          Enthousiasme: data.subratings.Enthousiasme ? data.subratings.Enthousiasme * 2 : undefined,
-          Marktkennis: data.subratings.Marktkennis ? data.subratings.Marktkennis * 2 : undefined,
-        } : undefined,
+        rating: data.rating * 2,
+        date: new Date().toISOString().split('T')[0],
+        createdAt: serverTimestamp(),
+        recommended: data.rating >= 4,
+        subratings: Object.keys(subratingsToSave).length > 0 ? subratingsToSave : undefined,
       };
 
       await addDoc(collection(db, "reviews"), reviewDataToSave);
@@ -123,14 +131,44 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
       });
       form.reset();
       setIsFormVisible(false);
-      // Optioneel: refresh de reviews lijst of voeg de nieuwe review optimistisch toe
-      // Voor nu, de gebruiker zal de review zien na een page refresh/nieuwe fetch
+      // TODO: Idealiter, refresh de lijst of voeg de nieuwe review optimistisch toe.
+      // Voor nu, een refresh van de pagina is nodig om de nieuwe review te zien.
     } catch (error) {
       console.error("Error submitting review to Firestore:", error);
       toast({
         variant: "destructive",
         title: "Fout bij indienen review",
         description: "Er is iets misgegaan. Probeer het later opnieuw.",
+      });
+    } finally {
+      setIsSubmittingReview(false);
+    }
+  };
+
+  const handleSeedDatabase = async () => {
+    setIsSubmittingReview(true); // Hergebruik loading state voor de seed knop
+    try {
+      const result = await seedDatabaseWithJsonReviews();
+      if (result.success) {
+        toast({
+          title: "Database Gevuld!",
+          description: result.message,
+        });
+        // Optioneel: refresh de reviews lijst
+        // Voor nu, de gebruiker moet de pagina refreshen om de geseede reviews te zien als de `initialReviews` niet opnieuw wordt gefetched.
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Database Vullen Mislukt",
+          description: result.message,
+        });
+      }
+    } catch (error) {
+      console.error("Error seeding database:", error);
+      toast({
+        variant: "destructive",
+        title: "Fout bij Vullen Database",
+        description: "Er is een onbekende fout opgetreden.",
       });
     } finally {
       setIsSubmittingReview(false);
@@ -175,11 +213,41 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
 
   return (
     <div>
-      <div className="mb-8 text-center">
+      <div className="mb-8 flex flex-col sm:flex-row justify-center items-center gap-4">
         <Button onClick={() => setIsFormVisible(!isFormVisible)} size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10 hover:text-primary">
           <PlusCircle className="mr-2 h-5 w-5" />
           {isFormVisible ? 'Sluit Formulier' : 'Review Achterlaten'}
         </Button>
+        
+        {/* Tijdelijke knop voor database seeding */}
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button size="lg" variant="destructive" className="bg-orange-600 hover:bg-orange-700 text-white">
+              <DatabaseZap className="mr-2 h-5 w-5" />
+              Seed Database (JSON)
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center"><AlertTriangle className="text-destructive mr-2 h-6 w-6"/>Database Seeden</AlertDialogTitle>
+              <AlertDialogDescription>
+                Deze actie zal de database vullen met de reviews uit het JSON-bestand. 
+                Als de database al reviews bevat, kunnen er duplicaten ontstaan. 
+                Weet u zeker dat u wilt doorgaan? Dit is bedoeld als een eenmalige actie.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annuleren</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleSeedDatabase} 
+                disabled={isSubmittingReview}
+                className="bg-destructive hover:bg-destructive/90"
+              >
+                {isSubmittingReview ? <Loader2 className="animate-spin" /> : "Ja, Seed Database"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
 
       {isFormVisible && (
@@ -336,3 +404,6 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
     </div>
   );
 }
+
+
+    
