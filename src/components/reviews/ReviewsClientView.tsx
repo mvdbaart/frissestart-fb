@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { seedDatabaseWithJsonReviews } from '@/app/reviews/actions'; // Import de server action
+import { seedDatabaseWithJsonReviews } from '@/app/reviews/actions';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
 
 
@@ -77,7 +77,7 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const [isFormVisible, setIsFormVisible] = useState<boolean>(false);
-  const [isSubmittingReview, setIsSubmittingReview] = useState<boolean>(false);
+  const [isSubmittingReview, setIsSubmittingReview] = useState<boolean>(false); // Gebruikt voor zowel review formulier als seed knop
   const { toast } = useToast();
   const observer = useRef<IntersectionObserver | null>(null);
 
@@ -116,10 +116,10 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
         reviewer_type: data.reviewer_type,
         title: data.title,
         review_text: data.review_text,
-        rating: data.rating * 2,
+        rating: data.rating * 2, // Schaal 1-5 naar 1-10 voor opslag
         date: new Date().toISOString().split('T')[0],
         createdAt: serverTimestamp(),
-        recommended: data.rating >= 4,
+        recommended: data.rating >= 4, // Bepaald o.b.v. 1-5 schaal
         subratings: Object.keys(subratingsToSave).length > 0 ? subratingsToSave : undefined,
       };
 
@@ -131,8 +131,8 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
       });
       form.reset();
       setIsFormVisible(false);
-      // TODO: Idealiter, refresh de lijst of voeg de nieuwe review optimistisch toe.
-      // Voor nu, een refresh van de pagina is nodig om de nieuwe review te zien.
+      // Idealiter zou je de reviewlijst hier refreshen of de nieuwe review optimistisch toevoegen.
+      // Voor nu: een refresh van de pagina is nodig om de nieuwe review direct te zien.
     } catch (error) {
       console.error("Error submitting review to Firestore:", error);
       toast({
@@ -144,18 +144,16 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
       setIsSubmittingReview(false);
     }
   };
-
+  
   const handleSeedDatabase = async () => {
-    setIsSubmittingReview(true); // Hergebruik loading state voor de seed knop
+    setIsSubmittingReview(true);
     try {
       const result = await seedDatabaseWithJsonReviews();
       if (result.success) {
         toast({
           title: "Database Gevuld!",
-          description: result.message,
+          description: result.message + " Refresh de pagina om de wijzigingen te zien.",
         });
-        // Optioneel: refresh de reviews lijst
-        // Voor nu, de gebruiker moet de pagina refreshen om de geseede reviews te zien als de `initialReviews` niet opnieuw wordt gefetched.
       } else {
         toast({
           variant: "destructive",
@@ -174,6 +172,7 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
       setIsSubmittingReview(false);
     }
   };
+
 
   const loadMoreReviews = useCallback(() => {
     if (isLoadingMore || (currentPage * ITEMS_PER_PAGE) >= initialReviews.length) return;
@@ -219,7 +218,6 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
           {isFormVisible ? 'Sluit Formulier' : 'Review Achterlaten'}
         </Button>
         
-        {/* Tijdelijke knop voor database seeding */}
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button size="lg" variant="destructive" className="bg-orange-600 hover:bg-orange-700 text-white">
@@ -343,7 +341,7 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
                       <FormField
                         key={subKey}
                         control={form.control}
-                        name={`subratings.${subKey}` as const}
+                        name={`subratings.${subKey}` as const} // Zorg dat de name correct is voor RHF
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-sm text-muted-foreground">{subKey}</FormLabel>
@@ -401,9 +399,18 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
       {!isLoadingMore && (currentPage * ITEMS_PER_PAGE) >= initialReviews.length && reviewsToShow.length > 0 && (
         <p className="text-center text-muted-foreground mt-12">U heeft alle reviews bekeken.</p>
       )}
+       {initialReviews.length === 0 && !isLoadingMore && (
+        <Card className="text-center py-12 shadow-lg col-span-full">
+          <CardHeader>
+              <DatabaseZap className="h-16 w-16 text-primary mx-auto mb-4" />
+              <CardTitle className="text-2xl font-semibold text-foreground">Database is Leeg</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-lg text-muted-foreground">Er zijn nog geen reviews in de database.</p>
+            <p className="text-md text-muted-foreground mt-2">Gebruik de "Seed Database (JSON)" knop om de database te vullen met de initiële reviews.</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
-
-
-    
