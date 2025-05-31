@@ -3,12 +3,11 @@
 
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, deleteDoc, collection, writeBatch, Timestamp, getDocs, query, where, limit } from 'firebase/firestore';
-import type { FirestoreCourseDocument, PlanningEntry } from '@/types/opleidingen';
+import type { FirestoreCourseDocument, PlanningEntry, GecombineerdeCursus } from '@/types/opleidingen'; // GecombineerdeCursus toegevoegd
 import fs from 'fs/promises';
 import path from 'path';
-// fetchAndCache is niet meer nodig hier nu we alles uit Firestore halen voor de admin sectie.
 
-// --- Review Actions ---
+// Review Actions
 export async function approveReview(reviewId: string): Promise<{ success: boolean, error?: string }> {
   if (!reviewId) return { success: false, error: "Review ID is required." };
   try {
@@ -28,7 +27,7 @@ export async function rejectReview(reviewId: string): Promise<{ success: boolean
   try {
     const reviewRef = doc(db, 'reviews', reviewId);
     await updateDoc(reviewRef, {
-      isApproved: false,
+      isApproved: false, // Expliciet op false zetten bij afkeuren
     });
     return { success: true };
   } catch (e) {
@@ -49,7 +48,8 @@ export async function deleteReview(reviewId: string): Promise<{ success: boolean
   }
 }
 
-// --- Course Actions (Firestore based) ---
+
+// Course Actions (Firestore based)
 
 export async function deleteCourse(courseDocId: string): Promise<{ success: boolean, error?: string }> {
   if (!courseDocId) return { success: false, error: "Course Document ID is required." };
@@ -130,10 +130,10 @@ export async function seedCoursesToFirestore(): Promise<{ success: boolean, mess
         eindtijd: entry.Eind,
         cursusNaam: entry.Cursus,
         locatieNaam: entry.Locatie,
-        inkoopprijs: parseFloatFromCurrencyString(entry.Inkoopprijs),
-        verkoopprijs: parseFloatFromCurrencyString(entry.VerkoopPrijs) || 0,
-        SOOB: parseFloatFromCurrencyString(entry.SOOB),
-        puntenCode95: entry["Punten Code95"] || undefined,
+        inkoopprijs: parseFloatFromCurrencyString(entry.Inkoopprijs) ?? null,
+        verkoopprijs: parseFloatFromCurrencyString(entry.VerkoopPrijs) ?? 0, // Default naar 0 als parsen mislukt
+        SOOB: parseFloatFromCurrencyString(entry.SOOB) ?? null,
+        puntenCode95: typeof entry["Punten Code95"] === 'number' ? entry["Punten Code95"] : null,
         branche: entry.Branche,
         instructeur: entry.Instructeur === "Nvt" ? null : entry.Instructeur,
         maximumAantal: entry.maximum_aantal || 0,
@@ -141,7 +141,6 @@ export async function seedCoursesToFirestore(): Promise<{ success: boolean, mess
         isPublished: true,
         createdAt: now,
         updatedAt: now,
-        // cursusId, locatieId, cursusLink, cursusOmschrijving, opdrachtgeverId, instructeurId zijn niet in deze JSON
       };
       
       const newCourseRef = doc(coursesCollectionRef); 
@@ -161,6 +160,3 @@ export async function seedCoursesToFirestore(): Promise<{ success: boolean, mess
     return { success: false, message: (error instanceof Error ? error.message : String(error)) };
   }
 }
-
-// De getAdminCourseData_OLD is nu niet meer nodig en wordt verwijderd.
-// De admin pagina haalt data nu direct uit Firestore.
