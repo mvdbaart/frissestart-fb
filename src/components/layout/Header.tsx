@@ -17,6 +17,10 @@ import {
   Briefcase,
   TagIcon,
   Phone,
+  LogIn,
+  LogOut,
+  UserPlus,
+  UserCircle
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -25,13 +29,15 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from '@/context/AuthContext'; // Import useAuth
 
 const opleidingsAanbodLink = { label: 'Opleidingsaanbod', icon: <BookOpenText className="h-5 w-5" /> };
 const onzeInstructeursLink = { href: '/onze-instructeurs', label: 'Onze Instructeurs', icon: <Users className="h-5 w-5 mr-2 md:mr-0" /> };
 const overOnsLink = { href: '/over-ons', label: 'Over Ons', icon: <Info className="h-5 w-5 mr-2" /> };
 const contactLink = { href: '/contact', label: 'Contact', icon: <MessageSquare className="h-5 w-5 mr-2" /> };
-const contactInfoDropdownLabel = "Contact & Info";
+const contactInfoDropdownLabel = "Info & Contact";
 
 
 const opleidingsAanbodItems = [
@@ -44,10 +50,12 @@ const opleidingsAanbodItems = [
 
 export function Header() {
   const pathname = usePathname();
+  const { user, signOut, isLoading } = useAuth(); // Gebruik de AuthContext
 
-  const NavLinkItem = ({ href, label, icon, isMobile = false, className }: { href: string; label: string; icon?: React.ReactNode, isMobile?: boolean, className?: string }) => (
+  const NavLinkItem = ({ href, label, icon, isMobile = false, className, onClick }: { href: string; label: string; icon?: React.ReactNode, isMobile?: boolean, className?: string, onClick?: () => void }) => (
     <Link
       href={href}
+      onClick={onClick}
       className={cn(
         'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors',
         pathname === href ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
@@ -117,7 +125,7 @@ export function Header() {
                   'md:px-2 lg:px-3'
                 )}
               >
-                <span className="md:mr-1 lg:mr-2">{contactInfoItems[1].icon}</span> {/* Using Contact icon as main for dropdown */}
+                <span className="md:mr-1 lg:mr-2">{contactLink.icon}</span> {/* Using Contact icon as main for dropdown */}
                 <span className="group-data-[collapsible=icon]:hidden group-data-[state=expanded]:md:inline">{contactInfoDropdownLabel}</span>
                 <ChevronDown className="h-4 w-4 opacity-70 ml-1" />
               </Button>
@@ -142,28 +150,55 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
-           <a
-             href="tel:+31408459091"
-             className={cn(
-              buttonVariants({ size: 'default', variant: 'secondary' }),
-              '!bg-secondary !text-secondary-foreground hover:!bg-secondary/90',
-              'hidden sm:flex items-center gap-2 shadow-md transform hover:scale-105 transition-transform duration-300'
-             )}
-           >
-             <Phone className="h-4 w-4" />
-             040 845 90 91
-           </a>
-           <Link
-              href="/contact?subject=Offerte%20Aanvraag"
-              className={cn(
-                buttonVariants({ size: 'default', variant: 'default' }),
-                '!bg-primary !text-white hover:!bg-primary/90',
-                'hidden sm:flex shadow-md transform hover:scale-105 transition-transform duration-300'
-              )}
-            >
-              Offerte Aanvragen
-            </Link>
-          {/* Mobile Navigation */}
+          {isLoading ? (
+            <div className="hidden sm:flex h-9 w-20 animate-pulse rounded-md bg-muted" />
+          ) : user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-2 px-2 md:px-3 text-sm font-medium">
+                  <UserCircle className="h-5 w-5 text-primary" />
+                  <span className="hidden sm:inline truncate max-w-[100px]">{user.email}</span>
+                  <ChevronDown className="h-4 w-4 opacity-70" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                {/* Optioneel: Profiel link
+                <DropdownMenuItem asChild>
+                  <Link href="/profiel">Mijn Profiel</Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                */}
+                <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Uitloggen
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className={cn(
+                  buttonVariants({ size: 'sm', variant: 'ghost' }),
+                  'hidden sm:flex items-center gap-1 text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <LogIn className="h-4 w-4" /> Inloggen
+              </Link>
+              <Link
+                href="/register"
+                className={cn(
+                  buttonVariants({ size: 'sm', variant: 'default' }),
+                  '!bg-primary !text-white hover:!bg-primary/90',
+                  'hidden sm:flex items-center gap-1 shadow-sm'
+                )}
+              >
+                <UserPlus className="h-4 w-4" /> Registreren
+              </Link>
+            </>
+          )}
+          
+          {/* Mobile Navigation Trigger */}
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
@@ -172,42 +207,73 @@ export function Header() {
                   <span className="sr-only">Open menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px] p-6">
-                <div className="flex flex-col gap-6">
-                  <Link href="/" className="mb-4">
-                    <Image src="/images/logo.png" alt="FrisseStart Logo" width={120} height={32} />
-                  </Link>
-                  <nav className="flex flex-col gap-1">
-                    <div className="mt-2">
-                        <p className="px-3 py-2 text-lg font-medium text-muted-foreground flex items-center gap-2">
-                            {opleidingsAanbodLink.icon}
-                            {opleidingsAanbodLink.label}
-                        </p>
-                        <div className="pl-6 flex flex-col gap-1 border-l-2 border-muted ml-3">
-                            {opleidingsAanbodItems.map((item) => (
-                                <NavLinkItem key={item.href} href={item.href} label={item.label} icon={item.icon} isMobile className="text-muted-foreground hover:text-foreground text-base" />
-                            ))}
-                        </div>
-                    </div>
-                    <NavLinkItem {...onzeInstructeursLink} isMobile />
-                    <div className="mt-2">
-                        <p className="px-3 py-2 text-lg font-medium text-muted-foreground flex items-center gap-2">
-                             {contactInfoItems[1].icon} {/* Using Contact icon */}
-                            {contactInfoDropdownLabel}
-                        </p>
-                        <div className="pl-6 flex flex-col gap-1 border-l-2 border-muted ml-3">
-                            {contactInfoItems.map((item) => (
-                                <NavLinkItem key={item.href} href={item.href} label={item.label} icon={item.icon} isMobile className="text-muted-foreground hover:text-foreground text-base" />
-                            ))}
-                        </div>
-                    </div>
-                  </nav>
-                  <a
+              <SheetContent side="right" className="w-[300px] sm:w-[400px] p-6 flex flex-col">
+                <Link href="/" className="mb-6">
+                  <Image src="/images/logo.png" alt="FrisseStart Logo" width={120} height={32} />
+                </Link>
+                <nav className="flex flex-col gap-1 flex-grow">
+                  {/* Opleidingsaanbod Dropdown voor Mobiel */}
+                  <p className="px-3 py-2 text-lg font-medium text-muted-foreground flex items-center gap-2">
+                      {opleidingsAanbodLink.icon}
+                      {opleidingsAanbodLink.label}
+                  </p>
+                  <div className="pl-6 flex flex-col gap-1 border-l-2 border-muted ml-3 mb-2">
+                      {opleidingsAanbodItems.map((item) => (
+                          <NavLinkItem key={item.href} href={item.href} label={item.label} icon={item.icon} isMobile className="text-muted-foreground hover:text-foreground text-base" />
+                      ))}
+                  </div>
+                  <NavLinkItem {...onzeInstructeursLink} isMobile />
+                  {/* Info & Contact Dropdown voor Mobiel */}
+                  <p className="px-3 py-2 text-lg font-medium text-muted-foreground flex items-center gap-2 mt-2">
+                       {contactLink.icon} {/* Using Contact icon */}
+                      {contactInfoDropdownLabel}
+                  </p>
+                  <div className="pl-6 flex flex-col gap-1 border-l-2 border-muted ml-3">
+                      {contactInfoItems.map((item) => (
+                          <NavLinkItem key={item.href} href={item.href} label={item.label} icon={item.icon} isMobile className="text-muted-foreground hover:text-foreground text-base" />
+                      ))}
+                  </div>
+                </nav>
+
+                {/* Auth Knoppen Mobiel */}
+                <div className="mt-auto pt-6 border-t border-border/40 space-y-3">
+                  {isLoading ? (
+                     <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
+                  ) : user ? (
+                    <>
+                      <div className="text-center text-sm text-muted-foreground mb-2 truncate">{user.email}</div>
+                      <Button onClick={signOut} variant="outline" className="w-full text-destructive border-destructive hover:bg-destructive/10">
+                        <LogOut className="mr-2 h-5 w-5" /> Uitloggen
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        href="/login"
+                        className={cn(
+                          buttonVariants({ size: 'lg', variant: 'outline' }),
+                          'w-full flex items-center justify-center gap-2'
+                        )}
+                      >
+                        <LogIn className="h-5 w-5" /> Inloggen
+                      </Link>
+                      <Link
+                        href="/register"
+                        className={cn(
+                          buttonVariants({ size: 'lg', variant: 'default' }),
+                          '!bg-primary !text-white hover:!bg-primary/90 w-full flex items-center justify-center gap-2'
+                        )}
+                      >
+                        <UserPlus className="h-5 w-5" /> Registreren
+                      </Link>
+                    </>
+                  )}
+                   <a
                      href="tel:+31408459091"
                      className={cn(
                       buttonVariants({ size: 'lg', variant: 'secondary' }),
                       '!bg-secondary !text-secondary-foreground hover:!bg-secondary/90',
-                      'transform hover:scale-105 transition-transform duration-300 w-full text-center flex items-center justify-center gap-2'
+                      'transform hover:scale-105 transition-transform duration-300 w-full text-center flex items-center justify-center gap-2 mt-3'
                      )}
                    >
                      <Phone className="h-5 w-5" />
@@ -218,7 +284,7 @@ export function Header() {
                       className={cn(
                         buttonVariants({ size: 'lg', variant: 'default' }),
                         '!bg-primary !text-white hover:!bg-primary/90',
-                        'transform hover:scale-105 transition-transform duration-300 w-full text-center'
+                        'transform hover:scale-105 transition-transform duration-300 w-full text-center mt-3'
                       )}
                     >
                       Offerte Aanvragen
@@ -232,4 +298,3 @@ export function Header() {
     </header>
   );
 }
-

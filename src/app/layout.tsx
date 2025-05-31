@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
@@ -5,6 +6,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
+import { AuthProvider } from '@/context/AuthContext'; // AuthProvider import
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -17,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'FrisseStart', // Afsluitende quote toegevoegd
+  title: 'FrisseStart', 
   description: 'UDé opleider voor transport en logistiek voor professionals én bedrijven',
 };
 
@@ -35,10 +37,12 @@ export default function RootLayout({
           geistMono.variable
         )}
       >
-        <Header />
-        <main className="flex-grow">{children}</main>
-        <Footer />
-        <Toaster />
+        <AuthProvider> {/* AuthProvider omwikkelt de app */}
+          <Header />
+          <main className="flex-grow">{children}</main>
+          <Footer />
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );
