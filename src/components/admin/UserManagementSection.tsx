@@ -14,6 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -233,22 +234,3 @@ export function UserManagementSection() {
     </Card>
   );
 }
-
-```
-  </change>
-  <change>
-    <file>/.env.example</file>
-    <content><![CDATA[
-# Firebase Client SDK - Publieke variabelen (prefix NEXT_PUBLIC_)
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
-
-# Firebase Admin SDK - Server-side (GEEN NEXT_PUBLIC_ prefix)
-# Sla de volledige inhoud van je serviceAccountKey.json bestand op als een Base64-gecodeerde string.
-# Dit is om problemen met newlines en speciale karakters in de private key te voorkomen.
-# Genereer de Base64 string bijvoorbeeld met: cat serviceAccountKey.json | base64
-FIREBASE_ADMIN_SERVICE_ACCOUNT_BASE64=

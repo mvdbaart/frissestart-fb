@@ -1,4 +1,4 @@
-
+// src/lib/firebase-admin.ts
 'use server';
 
 import * as admin from 'firebase-admin';
@@ -13,7 +13,8 @@ function formatPrivateKey(key: string) {
   return key.replace(/\\n/g, '\n');
 }
 
-function initializeFirebaseAdmin(params: FirebaseAdminAppParams): admin.app.App {
+// This function is kept for potential direct credential use, though Base64 is preferred for env vars.
+function initializeFirebaseAdminWithParams(params: FirebaseAdminAppParams): admin.app.App {
   if (admin.apps.length > 0) {
     return admin.app();
   }
@@ -39,7 +40,8 @@ function initializeAdminAppFromBase64(): admin.app.App {
   const serviceAccountBase64 = process.env.FIREBASE_ADMIN_SERVICE_ACCOUNT_BASE64;
 
   if (!serviceAccountBase64) {
-    throw new Error('De omgevingsvariabele FIREBASE_ADMIN_SERVICE_ACCOUNT_BASE64 is niet ingesteld. Kan Admin SDK niet initialiseren.');
+    console.error("FIREBASE_ADMIN_SERVICE_ACCOUNT_BASE64 is niet ingesteld in .env.local. Admin SDK kan niet initialiseren.");
+    throw new Error('De omgevingsvariabele FIREBASE_ADMIN_SERVICE_ACCOUNT_BASE64 is niet ingesteld.');
   }
 
   try {
@@ -50,7 +52,7 @@ function initializeAdminAppFromBase64(): admin.app.App {
 
     return admin.initializeApp({
       credential,
-      projectId: serviceAccountCredentials.project_id,
+      projectId: serviceAccountCredentials.project_id, // Gebruik project_id uit de service account JSON
     });
 
   } catch (error) {
@@ -59,19 +61,14 @@ function initializeAdminAppFromBase64(): admin.app.App {
   }
 }
 
-
-// Gebruik de Base64 initialisatie methode
-// const adminApp = initializeAdminAppFromBase64();
-// export const adminAuth = adminApp.auth();
-// export const adminDb = adminApp.firestore();
-
 // Dynamische initialisatie om problemen tijdens build/import te voorkomen als env var niet direct beschikbaar is
-let adminAuthInstance: admin.auth.Auth;
-let adminDbInstance: admin.firestore.Firestore;
+let adminAuthInstance: admin.auth.Auth | undefined;
+let adminDbInstance: admin.firestore.Firestore | undefined;
 
 function getAdminInstances() {
+  // Check if already initialized to prevent re-initialization
   if (!adminAuthInstance || !adminDbInstance) {
-    const app = initializeAdminAppFromBase64();
+    const app = initializeAdminAppFromBase64(); // Initialize if not already done
     adminAuthInstance = app.auth();
     adminDbInstance = app.firestore();
   }
