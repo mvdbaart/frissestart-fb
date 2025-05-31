@@ -5,8 +5,11 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { SectionContainer } from '@/components/ui/SectionContainer';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ReviewManagementSection } from '@/components/admin/ReviewManagementSection';
+import { CourseManagementSection } from '@/components/admin/CourseManagementSection';
+import { UserManagementSection } from '@/components/admin/UserManagementSection';
 
 export default function AdminPage() {
   const { user, isLoading } = useAuth();
@@ -16,6 +19,11 @@ export default function AdminPage() {
     if (!isLoading && !user) {
       router.push('/login?redirect=/admin');
     }
+    // Toekomstige check voor admin rol:
+    // if (!isLoading && user && !user.customClaims?.admin) {
+    //   toast({ variant: "destructive", title: "Geen Toegang", description: "U heeft geen rechten om deze pagina te bekijken." });
+    //   router.push('/');
+    // }
   }, [user, isLoading, router]);
 
   if (isLoading || !user) {
@@ -29,57 +37,34 @@ export default function AdminPage() {
     );
   }
 
-  // TODO: Voeg hier extra check toe of user.role === 'admin' als je role-based access implementeert
-  // Bijvoorbeeld: if (user.customClaims?.admin !== true) { router.push('/'); return null; }
-
   return (
     <SectionContainer className="py-12 md:py-16">
-      <div className="text-center mb-12">
+      <div className="text-center mb-8 md:mb-12">
         <h1 className="text-4xl md:text-5xl font-bold text-foreground">
           Admin <span className="text-primary">Beheerpaneel</span>
         </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto mt-2">
           Welkom op de beheerpagina, {user.email}.
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>Gebruikersbeheer</CardTitle>
-            <CardDescription>Beheer gebruikersaccounts en rollen.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Deze functionaliteit is nog niet geïmplementeerd.
-            </p>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="reviews" className="w-full">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 mb-8">
+          <TabsTrigger value="reviews">Reviewbeheer</TabsTrigger>
+          <TabsTrigger value="courses">Cursusbeheer</TabsTrigger>
+          <TabsTrigger value="users">Gebruikersbeheer</TabsTrigger>
+        </TabsList>
 
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>Cursusbeheer</CardTitle>
-            <CardDescription>Beheer cursussen, data en locaties.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Deze functionaliteit is nog niet geïmplementeerd.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle>Reviewbeheer</CardTitle>
-            <CardDescription>Modereer en beheer ingediende reviews.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Deze functionaliteit is nog niet geïmplementeerd.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="reviews">
+          <ReviewManagementSection />
+        </TabsContent>
+        <TabsContent value="courses">
+          <CourseManagementSection />
+        </TabsContent>
+        <TabsContent value="users">
+          <UserManagementSection />
+        </TabsContent>
+      </Tabs>
     </SectionContainer>
   );
 }
