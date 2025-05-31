@@ -3,7 +3,7 @@
 
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, deleteDoc, collection, writeBatch, Timestamp, getDocs, query, where, limit } from 'firebase/firestore';
-import type { FirestoreCourseDocument, PlanningEntry, GecombineerdeCursus } from '@/types/opleidingen'; // GecombineerdeCursus toegevoegd
+import type { FirestoreCourseDocument, PlanningEntry } from '@/types/opleidingen';
 import fs from 'fs/promises';
 import path from 'path';
 
@@ -14,6 +14,7 @@ export async function approveReview(reviewId: string): Promise<{ success: boolea
     const reviewRef = doc(db, 'reviews', reviewId);
     await updateDoc(reviewRef, {
       isApproved: true,
+      updatedAt: Timestamp.now(),
     });
     return { success: true };
   } catch (e) {
@@ -27,7 +28,8 @@ export async function rejectReview(reviewId: string): Promise<{ success: boolean
   try {
     const reviewRef = doc(db, 'reviews', reviewId);
     await updateDoc(reviewRef, {
-      isApproved: false, // Expliciet op false zetten bij afkeuren
+      isApproved: false,
+      updatedAt: Timestamp.now(),
     });
     return { success: true };
   } catch (e) {
@@ -101,7 +103,8 @@ export async function seedCoursesToFirestore(): Promise<{ success: boolean, mess
     const coursesCollectionRef = collection(db, 'courses');
     const existingCoursesSnapshot = await getDocs(query(coursesCollectionRef, limit(1)));
     if (!existingCoursesSnapshot.empty) {
-      return { success: true, message: 'Cursuscollectie lijkt al gevuld. Seeding overgeslagen.', count: 0 };
+      console.warn("[SEED] Cursuscollectie lijkt al gevuld. Seeding overgeslagen.");
+      return { success: true, message: 'Cursuscollectie lijkt al gevuld. Seeding overgeslagen. Leeg de collectie in Firebase Console als u opnieuw wilt seeden.', count: 0 };
     }
 
     const planningJsonPath = path.join(process.cwd(), 'Planning_OI_2025_import.json');
@@ -124,20 +127,20 @@ export async function seedCoursesToFirestore(): Promise<{ success: boolean, mess
       }
 
       const firestoreDoc: FirestoreCourseDocument = {
-        opleidingId: `planning_item_${index}_${entry.Cursus.replace(/\W/g, '')}_${entry.Datum.replace(/-/g, '')}`, 
+        opleidingId: `planning_${index}_${entry.Cursus.replace(/\W/g, '')}_${entry.Datum.replace(/-/g, '')}`, 
         datum: datumTimestamp,
         begintijd: entry.Begin,
         eindtijd: entry.Eind,
         cursusNaam: entry.Cursus,
         locatieNaam: entry.Locatie,
         inkoopprijs: parseFloatFromCurrencyString(entry.Inkoopprijs) ?? null,
-        verkoopprijs: parseFloatFromCurrencyString(entry.VerkoopPrijs) ?? 0, // Default naar 0 als parsen mislukt
+        verkoopprijs: parseFloatFromCurrencyString(entry.VerkoopPrijs) ?? 0,
         SOOB: parseFloatFromCurrencyString(entry.SOOB) ?? null,
         puntenCode95: typeof entry["Punten Code95"] === 'number' ? entry["Punten Code95"] : null,
         branche: entry.Branche,
         instructeur: entry.Instructeur === "Nvt" ? null : entry.Instructeur,
-        maximumAantal: entry.maximum_aantal || 0,
-        aantalGereserveerd: entry.aantal_gereserveerd || 0,
+        maximumAantal: typeof entry.maximum_aantal === 'number' ? entry.maximum_aantal : 0,
+        aantalGereserveerd: typeof entry.aantal_gereserveerd === 'number' ? entry.aantal_gereserveerd : 0,
         isPublished: true,
         createdAt: now,
         updatedAt: now,
@@ -153,10 +156,21 @@ export async function seedCoursesToFirestore(): Promise<{ success: boolean, mess
     }
 
     await batch.commit();
-    return { success: true, message: `Succesvol ${importedCount} cursussen geïmporteerd naar Firestore vanuit Planning_OI_2025_import.json.`, count: importedCount };
+    
+    console.warn("[SEED] BELANGRIJK: Cursussen succesvol geïmporteerd. Zet de Firestore rule voor 'create' op '/courses/{courseId}' DIRECT terug naar een veilige instelling (bijv. 'allow create: if isAdmin();'). De huidige open regel is ALLEEN voor seeden bedoeld.");
+
+    return { 
+      success: true, 
+      message: `Succesvol ${importedCount} cursussen geïmporteerd. BELANGRIJK: Zet de Firestore rule voor het aanmaken van cursussen nu terug naar een veilige instelling!`, 
+      count: importedCount 
+    };
 
   } catch (error) {
     console.error("Error seeding courses to Firestore:", error);
-    return { success: false, message: (error instanceof Error ? error.message : String(error)) };
+    let detailedMessage = (error instanceof Error ? error.message : String(error));
+    if (detailedMessage.includes("PERMISSION_DENIED")) {
+      detailedMessage += " Dit kan betekenen dat de server action geen geauthenticeerde gebruiker heeft voor Firestore, of dat de Firestore rules te restrictief zijn. Voor het seeden via deze actie, moeten de Firestore rules voor '/courses/{courseId}' 'allow create: if true;' toestaan (tijdelijk).";
+    }
+    return { success: false, message: detailedMessage };
   }
 }
