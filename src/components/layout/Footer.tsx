@@ -22,7 +22,8 @@ export function Footer() {
             <h3 className="text-lg font-semibold text-foreground mb-4">Snelle Links</h3>
             <ul className="space-y-2">
               <li><Link href="/over-ons" className="text-muted-foreground hover:text-primary transition-colors">Over Ons</Link></li>
-              <li><Link href="/opleidingsaanbod" className="text-muted-foreground hover:text-primary transition-colors">Opleidingsaanbod</Link></li> {/* Aangepast */}
+              <li><Link href="/opleidingsaanbod" className="text-muted-foreground hover:text-primary transition-colors">Opleidingsaanbod</Link></li>
+              <li><Link href="/reviews" className="text-muted-foreground hover:text-primary transition-colors">Reviews</Link></li> {/* Toegevoegd */}
               <li><Link href="/#course-recommender" className="text-muted-foreground hover:text-primary transition-colors">Cursus Recommender</Link></li>
               <li><Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">Contact</Link></li>
             </ul>
@@ -38,7 +39,7 @@ export function Footer() {
           </div>
         </div>
         <div className="border-t border-border/40 pt-8 text-center text-sm text-muted-foreground">
-          <p>&copy; {currentYear} FrisseStart. Alle rechten voorbehouden.</p> {/* "Digital" verwijderd */}
+          <p>&copy; {currentYear} FrisseStart. Alle rechten voorbehouden.</p>
           <p>Ontworpen met passie.</p>
         </div>
       </div>

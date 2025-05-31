@@ -17,7 +17,7 @@ import {
   Briefcase,
   TagIcon,
   Phone,
-  Star, // Review icoon toegevoegd
+  // Star, // Review icoon verwijderd
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -31,7 +31,7 @@ import {
 const opleidingsAanbodLink = { label: 'Opleidingsaanbod', icon: <BookOpenText className="h-5 w-5" /> };
 const onzeInstructeursLink = { href: '/onze-instructeurs', label: 'Onze Instructeurs', icon: <Users className="h-5 w-5 mr-2 md:mr-0" /> };
 const overOnsLink = { href: '/over-ons', label: 'Over Ons', icon: <Info className="h-5 w-5 mr-2 md:mr-0" /> };
-const reviewsLink = { href: '/reviews', label: 'Reviews', icon: <Star className="h-5 w-5 mr-2 md:mr-0" /> }; // Nieuwe link
+// const reviewsLink = { href: '/reviews', label: 'Reviews', icon: <Star className="h-5 w-5 mr-2 md:mr-0" /> }; // Verwijderd
 const contactLink = { href: '/contact', label: 'Contact', icon: <MessageSquare className="h-5 w-5 mr-2 md:mr-0" /> };
 
 const opleidingsAanbodItems = [
@@ -105,7 +105,7 @@ export function Header() {
           
           <NavLinkItem {...overOnsLink} />
           <NavLinkItem {...onzeInstructeursLink} />
-          <NavLinkItem {...reviewsLink} /> {/* Nieuwe link toegevoegd */}
+          {/* <NavLinkItem {...reviewsLink} /> */} {/* Verwijderd */}
           <NavLinkItem {...contactLink} />
         </nav>
 
@@ -159,7 +159,7 @@ export function Header() {
                     </div>
                     <NavLinkItem {...overOnsLink} isMobile />
                     <NavLinkItem {...onzeInstructeursLink} isMobile />
-                    <NavLinkItem {...reviewsLink} isMobile /> {/* Nieuwe link toegevoegd */}
+                    {/* <NavLinkItem {...reviewsLink} isMobile /> */} {/* Verwijderd */}
                     <NavLinkItem {...contactLink} isMobile />
                   </nav>
                   <a

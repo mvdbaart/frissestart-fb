@@ -2,16 +2,18 @@
 import { HeroSection } from '@/components/sections/HeroSection';
 import { AboutSection } from '@/components/sections/AboutSection';
 import { FeaturesSection } from '@/components/sections/FeaturesSection';
-import { PopularCoursesSection } from '@/components/sections/PopularCoursesSection'; // Nieuwe import
+import { PopularCoursesSection } from '@/components/sections/PopularCoursesSection';
 import { SectionContainer } from '@/components/ui/SectionContainer';
 import { Button, buttonVariants } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Star, Building, Users, Phone } from 'lucide-react';
+import { CheckCircle, Building, Users, Phone, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getReviewsData } from '@/lib/review-data';
+import { ReviewCard } from '@/components/reviews/ReviewCard';
 
-// TrustBlock component (al aanwezig)
+
 function TrustBlock() {
   return (
     <SectionContainer id="trust-block" className="bg-muted/50">
@@ -33,7 +35,7 @@ function TrustBlock() {
             <p className="text-2xl font-semibold text-foreground mb-4">Erkend door</p>
             <div className="flex justify-center items-center gap-6">
               <div className="relative h-12 w-24">
-                <Image src="/images/soob-logo.png" alt="SOOB Logo" layout="fill" objectFit="contain" data-ai-hint="SOOB logo" />
+                <Image src="/images/soob-logo.png" alt="SOOB Logo" layout="fill" objectFit="contain" data-ai-hint="SOOB logo"/>
               </div>
               <div className="relative h-12 w-24">
                 <Image src="/images/tln-logo.png" alt="TLN Logo" layout="fill" objectFit="contain" data-ai-hint="TLN logo" />
@@ -46,67 +48,36 @@ function TrustBlock() {
   );
 }
 
-const testimonials = [
-  {
-    quote: "Dankzij FrisseStart heb ik mijn carrière een nieuwe impuls kunnen geven. De cursus was praktijkgericht en de docenten super behulpzaam!",
-    name: "Anna de Vries",
-    role: "Webdeveloper",
-    avatar: "https://placehold.co/100x100.png",
-    rating: 5,
-  },
-  {
-    quote: "De flexibiliteit van de online modules paste perfect bij mijn drukke schema. Ik heb enorm veel geleerd en pas dit nu dagelijks toe in mijn werk.",
-    name: "Bas Jansen",
-    role: "Data Analist",
-    avatar: "https://placehold.co/100x100.png",
-    rating: 4,
-  },
-  {
-    quote: "Een absolute aanrader! FrisseStart biedt kwalitatieve opleidingen die je echt voorbereiden op de toekomst.",
-    name: "Sophie Meijer",
-    role: "UX Designer",
-    avatar: "https://placehold.co/100x100.png",
-    rating: 5,
-  }
-];
+async function HomepageTestimonialsSection() {
+  const allReviews = await getReviewsData();
+  // Pak de eerste 3 meest recente reviews (data is al gesorteerd in getReviewsData)
+  const recentReviews = allReviews.slice(0, 3);
 
-function TestimonialsSection() {
   return (
-    <SectionContainer id="testimonials" className="bg-background">
+    <SectionContainer id="homepage-testimonials" className="bg-background">
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-foreground">
-          Wat Onze <span className="text-primary">Cursisten Zeggen</span>
+          Wat Onze <span className="text-primary">Klanten Zeggen</span>
         </h2>
         <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
           Echte verhalen van mensen die hun carrière transformeerden met FrisseStart.
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {testimonials.map((testimonial, index) => (
-          <Card key={index} className="bg-card shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
-            <CardContent className="pt-6 flex-grow">
-              <div className="flex mb-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={cn(
-                      "h-5 w-5",
-                      i < testimonial.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
-                    )}
-                  />
-                ))}
-              </div>
-              <p className="text-muted-foreground italic mb-4">"{testimonial.quote}"</p>
-            </CardContent>
-            <CardFooter className="flex items-center gap-4 border-t pt-4 mt-auto">
-              <Image src={testimonial.avatar} alt={testimonial.name} width={48} height={48} className="rounded-full" data-ai-hint="person portrait" />
-              <div>
-                <p className="font-semibold text-foreground">{testimonial.name}</p>
-                <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
+      {recentReviews.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {recentReviews.map((review, index) => (
+            <ReviewCard key={review.title + index} review={review} />
+          ))}
+        </div>
+      ) : (
+        <p className="text-center text-muted-foreground">Geen reviews gevonden.</p>
+      )}
+      <div className="text-center mt-12">
+        <Button asChild size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10 hover:text-primary">
+          <Link href="/reviews">
+            Bekijk alle reviews <ArrowRight className="ml-2 h-5 w-5" />
+          </Link>
+        </Button>
       </div>
     </SectionContainer>
   );
@@ -124,11 +95,7 @@ function CtaSection() {
           Neem de volgende stap in uw carrière. Ontdek onze cursussen of vraag een persoonlijk adviesgesprek aan.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link
-            href="/opleidingsaanbod"
-            passHref
-            legacyBehavior
-          >
+           <Link href="/opleidingsaanbod" passHref legacyBehavior>
             <a
               className={cn(
                 buttonVariants({ size: 'lg' }),
@@ -136,22 +103,18 @@ function CtaSection() {
                 'shadow-lg transform hover:scale-105 transition-transform duration-300 text-sm sm:text-base px-4 sm:px-8'
               )}
             >
-            Bekijk Alle Cursussen
+              Bekijk Alle Cursussen
             </a>
           </Link>
-          <Link
-            href="/contact?subject=Adviesgesprek%20Aanvraag"
-            passHref
-            legacyBehavior
-          >
+          <Link href="/contact?subject=Adviesgesprek%20Aanvraag" passHref legacyBehavior>
             <a
-            className={cn(
-              buttonVariants({ size: 'lg', variant: 'ghost' }),
-              '!text-white hover:!bg-white/20 hover:!text-white',
-              'shadow-lg transform hover:scale-105 transition-transform duration-300 text-sm sm:text-base px-4 sm:px-8'
-            )}
+             className={cn(
+                buttonVariants({ size: 'lg', variant: 'ghost' }),
+                '!text-white hover:!bg-white/20 hover:!text-white',
+                'shadow-lg transform hover:scale-105 transition-transform duration-300 text-sm sm:text-base px-4 sm:px-8'
+              )}
             >
-            Neem Contact Op
+              Neem Contact Op
             </a>
           </Link>
         </div>
@@ -161,15 +124,15 @@ function CtaSection() {
 }
 
 
-export default function HomePage() {
+export default async function HomePage() { // async toegevoegd
   return (
     <>
       <HeroSection />
       <AboutSection />
       <FeaturesSection />
-      <PopularCoursesSection /> {/* Nieuwe sectie hier toegevoegd */}
+      <PopularCoursesSection />
       <TrustBlock />
-      <TestimonialsSection />
+      <HomepageTestimonialsSection /> {/* Aangepaste sectie hier gebruikt */}
       <CtaSection />
     </>
   );
