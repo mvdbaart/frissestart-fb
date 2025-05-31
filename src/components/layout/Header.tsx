@@ -21,7 +21,7 @@ import {
   LogOut,
   UserPlus,
   UserCircle,
-  ShieldCheck // Icon voor Beheer
+  ShieldCheck
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -30,6 +30,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger, // DropdownMenuTrigger hier toegevoegd
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from '@/context/AuthContext';
 
