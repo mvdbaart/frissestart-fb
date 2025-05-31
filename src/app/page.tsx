@@ -12,6 +12,7 @@ import { CheckCircle, Building, Users, Phone, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getReviewsData } from '@/lib/review-data';
 import { ReviewCard } from '@/components/reviews/ReviewCard';
+import type { Review } from '@/types/reviews';
 
 
 function TrustBlock() {
@@ -49,9 +50,47 @@ function TrustBlock() {
 }
 
 async function HomepageTestimonialsSection() {
-  const allReviews = await getReviewsData();
-  // Pak de eerste 3 meest recente reviews (data is al gesorteerd in getReviewsData)
-  const recentReviews = allReviews.slice(0, 3);
+  const allReviews = await getReviewsData(); // Data is al gesorteerd (nieuwste eerst)
+
+  const opdrachtgeverReviews = allReviews.filter(r => r.reviewer_type === 'Opdrachtgever');
+  const andereReviews = allReviews.filter(r => r.reviewer_type !== 'Opdrachtgever');
+
+  let selectedReviews: Review[] = [];
+
+  // Voeg maximaal 2 opdrachtgever reviews toe
+  selectedReviews.push(...opdrachtgeverReviews.slice(0, 2));
+
+  // Vul aan met andere reviews tot een totaal van 3, vermijd duplicaten
+  if (selectedReviews.length < 3) {
+    const needed = 3 - selectedReviews.length;
+    const andereReviewsToAdd = andereReviews.filter(
+      ar => !selectedReviews.find(sr => sr.title === ar.title && sr.date === ar.date) // Simpele duplicate check
+    ).slice(0, needed);
+    selectedReviews.push(...andereReviewsToAdd);
+  }
+  
+  // Als er nog steeds minder dan 3 zijn (bijv. weinig 'andere' reviews), vul aan met meer opdrachtgever reviews
+  if (selectedReviews.length < 3 && opdrachtgeverReviews.length > selectedReviews.filter(r=>r.reviewer_type === 'Opdrachtgever').length) {
+      const extraOpdrachtgeverReviewsNeeded = 3 - selectedReviews.length;
+      const extraOpdrachtgeverReviews = opdrachtgeverReviews.filter(
+          or => !selectedReviews.find(sr => sr.title === or.title && sr.date === or.date)
+      ).slice(0, extraOpdrachtgeverReviewsNeeded);
+      selectedReviews.push(...extraOpdrachtgeverReviews);
+  }
+  
+  // Fallback: als er nog steeds te weinig zijn, pak gewoon de eerste 3 ongeacht type (en uniek)
+  if (selectedReviews.length < 3) {
+    const uniqueTitles = new Set(selectedReviews.map(r => r.title + r.date));
+    for (const review of allReviews) {
+        if (selectedReviews.length >= 3) break;
+        if (!uniqueTitles.has(review.title + review.date)) {
+            selectedReviews.push(review);
+            uniqueTitles.add(review.title + review.date);
+        }
+    }
+  }
+   selectedReviews = selectedReviews.slice(0,3);
+
 
   return (
     <SectionContainer id="homepage-testimonials" className="bg-background">
@@ -63,9 +102,9 @@ async function HomepageTestimonialsSection() {
           Echte verhalen van mensen die hun carrière transformeerden met FrisseStart.
         </p>
       </div>
-      {recentReviews.length > 0 ? (
+      {selectedReviews.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {recentReviews.map((review, index) => (
+          {selectedReviews.map((review, index) => (
             <ReviewCard key={review.title + index} review={review} />
           ))}
         </div>
@@ -94,7 +133,7 @@ function CtaSection() {
         <p className="text-lg mb-8 max-w-xl mx-auto opacity-90">
           Neem de volgende stap in uw carrière. Ontdek onze cursussen of vraag een persoonlijk adviesgesprek aan.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center md:justify-start">
            <Link href="/opleidingsaanbod" passHref legacyBehavior>
             <a
               className={cn(
@@ -124,7 +163,7 @@ function CtaSection() {
 }
 
 
-export default async function HomePage() { // async toegevoegd
+export default async function HomePage() { 
   return (
     <>
       <HeroSection />
@@ -132,8 +171,9 @@ export default async function HomePage() { // async toegevoegd
       <FeaturesSection />
       <PopularCoursesSection />
       <TrustBlock />
-      <HomepageTestimonialsSection /> {/* Aangepaste sectie hier gebruikt */}
+      <HomepageTestimonialsSection /> 
       <CtaSection />
     </>
   );
 }
+

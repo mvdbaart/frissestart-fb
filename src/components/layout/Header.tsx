@@ -17,7 +17,6 @@ import {
   Briefcase,
   TagIcon,
   Phone,
-  // Star, // Review icoon verwijderd
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -30,9 +29,10 @@ import {
 
 const opleidingsAanbodLink = { label: 'Opleidingsaanbod', icon: <BookOpenText className="h-5 w-5" /> };
 const onzeInstructeursLink = { href: '/onze-instructeurs', label: 'Onze Instructeurs', icon: <Users className="h-5 w-5 mr-2 md:mr-0" /> };
-const overOnsLink = { href: '/over-ons', label: 'Over Ons', icon: <Info className="h-5 w-5 mr-2 md:mr-0" /> };
-// const reviewsLink = { href: '/reviews', label: 'Reviews', icon: <Star className="h-5 w-5 mr-2 md:mr-0" /> }; // Verwijderd
-const contactLink = { href: '/contact', label: 'Contact', icon: <MessageSquare className="h-5 w-5 mr-2 md:mr-0" /> };
+const overOnsLink = { href: '/over-ons', label: 'Over Ons', icon: <Info className="h-5 w-5 mr-2" /> };
+const contactLink = { href: '/contact', label: 'Contact', icon: <MessageSquare className="h-5 w-5 mr-2" /> };
+const contactInfoDropdownLabel = "Contact & Info";
+
 
 const opleidingsAanbodItems = [
   { href: '/opleidingsaanbod', label: 'Alle Opleidingen', icon: <BookMarked className="h-5 w-5 mr-2" /> },
@@ -60,6 +60,8 @@ export function Header() {
       <span className={cn(isMobile ? '' : 'group-data-[collapsible=icon]:hidden group-data-[state=expanded]:md:inline')}>{label}</span>
     </Link>
   );
+
+  const contactInfoItems = [overOnsLink, contactLink];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -103,10 +105,40 @@ export function Header() {
             </DropdownMenuContent>
           </DropdownMenu>
           
-          <NavLinkItem {...overOnsLink} />
           <NavLinkItem {...onzeInstructeursLink} />
-          {/* <NavLinkItem {...reviewsLink} /> */} {/* Verwijderd */}
-          <NavLinkItem {...contactLink} />
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+               <Button
+                variant="ghost"
+                className={cn(
+                  'flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground',
+                  (pathname === overOnsLink.href || pathname === contactLink.href) ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground',
+                  'md:px-2 lg:px-3'
+                )}
+              >
+                <span className="md:mr-1 lg:mr-2">{contactInfoItems[1].icon}</span> {/* Using Contact icon as main for dropdown */}
+                <span className="group-data-[collapsible=icon]:hidden group-data-[state=expanded]:md:inline">{contactInfoDropdownLabel}</span>
+                <ChevronDown className="h-4 w-4 opacity-70 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-60">
+              {contactInfoItems.map((item) => (
+                <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
+                   <Link
+                    href={item.href}
+                    className={cn(
+                      'flex items-center w-full text-sm py-2 px-3',
+                      pathname === item.href && 'bg-accent font-semibold text-accent-foreground'
+                    )}
+                  >
+                    {item.icon}
+                    <span className="ml-2">{item.label}</span>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -157,10 +189,18 @@ export function Header() {
                             ))}
                         </div>
                     </div>
-                    <NavLinkItem {...overOnsLink} isMobile />
                     <NavLinkItem {...onzeInstructeursLink} isMobile />
-                    {/* <NavLinkItem {...reviewsLink} isMobile /> */} {/* Verwijderd */}
-                    <NavLinkItem {...contactLink} isMobile />
+                    <div className="mt-2">
+                        <p className="px-3 py-2 text-lg font-medium text-muted-foreground flex items-center gap-2">
+                             {contactInfoItems[1].icon} {/* Using Contact icon */}
+                            {contactInfoDropdownLabel}
+                        </p>
+                        <div className="pl-6 flex flex-col gap-1 border-l-2 border-muted ml-3">
+                            {contactInfoItems.map((item) => (
+                                <NavLinkItem key={item.href} href={item.href} label={item.label} icon={item.icon} isMobile className="text-muted-foreground hover:text-foreground text-base" />
+                            ))}
+                        </div>
+                    </div>
                   </nav>
                   <a
                      href="tel:+31408459091"
@@ -192,3 +232,4 @@ export function Header() {
     </header>
   );
 }
+
