@@ -4,7 +4,7 @@
 import type { Review } from '@/types/reviews';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, MessageSquareText, CalendarDays, UserCircle } from 'lucide-react';
+import { Star, MessageSquareText, CalendarDays, UserCircle, ClipboardCheck, Users, Radio, Brain } from 'lucide-react'; // Toegevoegde iconen voor subratings
 import { format, parseISO } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
@@ -13,13 +13,13 @@ interface ReviewCardProps {
 }
 
 export function ReviewCard({ review }: ReviewCardProps) {
-  const displayRating = Math.round(review.rating / 2); // Converteer 10-puntschaal naar 5 sterren
+  const displayRating = Math.round(review.rating / 2); 
 
   const formatDate = (dateString: string) => {
     try {
       return format(parseISO(dateString), 'dd MMMM yyyy', { locale: nl });
     } catch (e) {
-      return dateString; // Fallback if date is not parsable
+      return dateString; 
     }
   };
 
@@ -42,6 +42,15 @@ export function ReviewCard({ review }: ReviewCardProps) {
         return 'default';
     }
   };
+
+  const subratingIcons = {
+    Begeleiding: <Users size={14} className="mr-1.5 text-primary/80" />,
+    "Heldere communicatie": <MessageSquareText size={14} className="mr-1.5 text-primary/80" />,
+    Enthousiasme: <ClipboardCheck size={14} className="mr-1.5 text-primary/80" />,
+    Marktkennis: <Brain size={14} className="mr-1.5 text-primary/80" />,
+  };
+
+  const hasSubratings = review.subratings && Object.values(review.subratings).some(val => val !== undefined && val !== null);
 
   return (
     <Card className="flex flex-col h-full shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card">
@@ -68,7 +77,25 @@ export function ReviewCard({ review }: ReviewCardProps) {
         </div>
       </CardHeader>
       <CardContent className="flex-grow pb-4">
-        <p className="text-sm text-muted-foreground leading-relaxed">{review.review_text}</p>
+        <p className="text-sm text-muted-foreground leading-relaxed mb-4">{review.review_text}</p>
+        
+        {hasSubratings && (
+          <div className="mt-4 pt-3 border-t border-border">
+            <h4 className="text-xs font-semibold text-muted-foreground mb-2">Specifieke Beoordelingen:</h4>
+            <ul className="space-y-1">
+              {Object.entries(review.subratings || {}).map(([key, value]) => {
+                if (value === undefined || value === null) return null;
+                const TypedKey = key as keyof typeof subratingIcons;
+                return (
+                  <li key={key} className="text-xs text-muted-foreground flex items-center">
+                    {subratingIcons[TypedKey] || <Star size={14} className="mr-1.5 text-primary/80" />} 
+                    {key}: <span className="font-medium text-foreground ml-1">{value}/10</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </CardContent>
       {review.response && (
         <CardFooter className="bg-primary/5 p-4 border-t mt-auto">

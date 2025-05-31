@@ -1,16 +1,16 @@
 
 export interface SubRatings {
-  Begeleiding?: number;
-  "Heldere communicatie"?: number;
-  Enthousiasme?: number;
-  Marktkennis?: number;
+  Begeleiding?: number; // Schaal 1-10 in JSON, formulier input is 1-5
+  "Heldere communicatie"?: number; // Schaal 1-10 in JSON, formulier input is 1-5
+  Enthousiasme?: number; // Schaal 1-10 in JSON, formulier input is 1-5
+  Marktkennis?: number; // Schaal 1-10 in JSON, formulier input is 1-5
 }
 
 export interface Review {
   date: string;
-  rating: number; // Gaat 1-10 zijn, omzetten naar 1-5 voor sterren.
+  rating: number; 
   subratings?: SubRatings;
-  reviewer_type?: "Cursist" | "Opdrachtgever" | "Kandidaat" | string; // Specifiekere types + fallback
+  reviewer_type?: "Cursist" | "Opdrachtgever" | "Kandidaat" | string; 
   reviewer_name: string;
   title: string;
   review_text: string;

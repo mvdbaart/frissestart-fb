@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { Review } from '@/types/reviews';
+import type { Review, SubRatings } from '@/types/reviews';
 import { ReviewCard } from './ReviewCard';
 import { Button } from '@/components/ui/button';
 import { Loader2, PlusCircle, Send, Star as StarIcon } from 'lucide-react';
@@ -15,7 +15,7 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils'; // Import cn utility
+import { cn } from '@/lib/utils';
 
 interface ReviewsClientViewProps {
   initialReviews: Review[];
@@ -23,15 +23,50 @@ interface ReviewsClientViewProps {
 
 const ITEMS_PER_PAGE = 9;
 
+const subratingSchema = z.number().min(0).max(5).optional().default(0); // 0 for not rated
+
 const reviewFormSchema = z.object({
   reviewer_name: z.string().min(2, { message: "Naam is verplicht (min. 2 karakters)." }),
   reviewer_type: z.enum(["Cursist", "Opdrachtgever", "Kandidaat"], { required_error: "Selecteer uw type." }),
   title: z.string().min(5, { message: "Titel is verplicht (min. 5 karakters)." }),
   review_text: z.string().min(20, { message: "Reviewtekst is verplicht (min. 20 karakters)." }).max(1000, {message: "Maximale lengte is 1000 karakters."}),
   rating: z.number().min(1,{ message: "Beoordeling is verplicht." }).max(5, { message: "Beoordeling tussen 1 en 5 sterren." }),
+  subratings: z.object({
+    Begeleiding: subratingSchema,
+    "Heldere communicatie": subratingSchema,
+    Enthousiasme: subratingSchema,
+    Marktkennis: subratingSchema,
+  }).optional(),
 });
 
 type ReviewFormData = z.infer<typeof reviewFormSchema>;
+
+interface StarRatingInputProps {
+  value: number;
+  onChange: (value: number) => void;
+  maxStars?: number;
+}
+
+function StarRatingInput({ value, onChange, maxStars = 5 }: StarRatingInputProps) {
+  return (
+    <div className="flex items-center gap-1">
+      {[...Array(maxStars)].map((_, index) => {
+        const starValue = index + 1;
+        return (
+          <StarIcon
+            key={starValue}
+            className={cn(
+              "h-7 w-7 cursor-pointer transition-colors",
+              value >= starValue ? "text-yellow-400 fill-yellow-400" : "text-gray-300 hover:text-yellow-300"
+            )}
+            onClick={() => onChange(starValue)}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 
 export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
   const [reviewsToShow, setReviewsToShow] = useState<Review[]>(initialReviews.slice(0, ITEMS_PER_PAGE));
@@ -49,21 +84,35 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
       reviewer_type: undefined,
       title: "",
       review_text: "",
-      rating: 0, // Default to 0, user must select a star
+      rating: 0, 
+      subratings: {
+        Begeleiding: 0,
+        "Heldere communicatie": 0,
+        Enthousiasme: 0,
+        Marktkennis: 0,
+      }
     },
   });
 
   const handleFormSubmit: SubmitHandler<ReviewFormData> = async (data) => {
     setIsSubmittingReview(true);
-    // Simulate API call - In a real app, this would send data to a backend
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    console.log("Nieuwe review data:", {
+    // Convert 1-5 star ratings for subratings to 1-10 for potential backend consistency
+    // For now, we just log them as 1-5 as per form input.
+    const submittedDataForLog = {
       ...data,
-      date: new Date().toISOString().split('T')[0], //YYYY-MM-DD
-      // subratings: {}, // Voor nu leeg
-      // recommended: true, // Standaardwaarde, kan aangepast
-    });
+      date: new Date().toISOString().split('T')[0],
+      rating: data.rating * 2, // Convert main rating to 1-10 scale for logging consistency with existing data
+      subratings: data.subratings ? {
+        Begeleiding: data.subratings.Begeleiding ? data.subratings.Begeleiding * 2 : undefined,
+        "Heldere communicatie": data.subratings["Heldere communicatie"] ? data.subratings["Heldere communicatie"] * 2 : undefined,
+        Enthousiasme: data.subratings.Enthousiasme ? data.subratings.Enthousiasme * 2 : undefined,
+        Marktkennis: data.subratings.Marktkennis ? data.subratings.Marktkennis * 2 : undefined,
+      } : undefined,
+      recommended: data.rating >= 4 // Example: auto-recommend if rating is 4 or 5 stars (8/10)
+    };
+    console.log("Nieuwe review data (geschaald naar 1-10 voor log):", submittedDataForLog);
 
     toast({
       title: "Review Ontvangen!",
@@ -108,6 +157,8 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
     setReviewsToShow(initialReviews.slice(0, ITEMS_PER_PAGE));
     setCurrentPage(1);
   }, [initialReviews]);
+
+  const subratingLabels: (keyof SubRatings)[] = ["Begeleiding", "Heldere communicatie", "Enthousiasme", "Marktkennis"];
 
   return (
     <div>
@@ -195,25 +246,37 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
                   name="rating"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Beoordeling (1-5 sterren)</FormLabel>
+                      <FormLabel>Algemene Beoordeling (1-5 sterren)</FormLabel>
                       <FormControl>
-                        <div className="flex items-center gap-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <StarIcon
-                              key={star}
-                              className={cn(
-                                "h-7 w-7 cursor-pointer transition-colors",
-                                field.value >= star ? "text-yellow-400 fill-yellow-400" : "text-gray-300 hover:text-yellow-300"
-                              )}
-                              onClick={() => field.onChange(star)}
-                            />
-                          ))}
-                        </div>
+                        <StarRatingInput value={field.value} onChange={field.onChange} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                
+                <div className="space-y-4 pt-4 border-t">
+                  <FormLabel className="text-md font-medium">Specifieke Beoordelingen (optioneel)</FormLabel>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                    {subratingLabels.map((subKey) => (
+                      <FormField
+                        key={subKey}
+                        control={form.control}
+                        name={`subratings.${subKey}` as const}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm text-muted-foreground">{subKey}</FormLabel>
+                            <FormControl>
+                               <StarRatingInput value={field.value || 0} onChange={field.onChange} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    ))}
+                  </div>
+                </div>
+
               </CardContent>
               <CardFooter>
                 <Button type="submit" disabled={isSubmittingReview} size="lg" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
