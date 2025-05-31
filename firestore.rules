@@ -4,34 +4,46 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper function om te checken of een gebruiker admin is
+    // Zorg ervoor dat admin gebruikers een custom claim { admin: true } hebben.
+    function isAdmin() {
+      return request.auth != null && request.auth.token != null && request.auth.token.admin == true;
+    }
+
     // Users collection (optioneel, maar goede praktijk)
-    // - Ingelogde gebruikers kunnen hun eigen gebruikersdocument lezen en schrijven.
-    // - Admins (met custom claim admin:true) kunnen elk gebruikersdocument lezen en schrijven.
     match /users/{userId} {
-      allow read, write: if request.auth != null && (request.auth.uid == userId || request.auth.token.admin == true);
-      // Toevoegen: Validatie voor de data die een gebruiker mag schrijven naar zijn eigen profiel.
+      // Ingelogde gebruikers kunnen hun eigen gebruikersdocument lezen en schrijven.
+      // Admins kunnen elk gebruikersdocument lezen en schrijven.
+      allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      // Je kunt hier specifieke validatieregels toevoegen voor velden die een gebruiker mag aanpassen.
     }
 
     // Reviews collection
     match /reviews/{reviewId} {
       // Iedereen mag goedgekeurde reviews lezen.
-      // Admins mogen alle reviews lezen (ook niet-goedgekeurde).
-      allow read: if resource.data.isApproved == true || (request.auth != null && request.auth.token.admin == true);
+      // Admins mogen alle reviews lezen (ook niet-goedgekeurde of nog niet gemodereerde).
+      allow read: if resource.data.isApproved == true || isAdmin();
       
       // Alleen ingelogde gebruikers mogen reviews aanmaken.
       allow create: if request.auth != null
-                    // Basisvalidatie voor inkomende data:
-                    && request.resource.data.rating >= 0 && request.resource.data.rating <= 10 // Interne schaal
-                    && request.resource.data.reviewer_name is string && request.resource.data.reviewer_name.size() > 0
-                    && request.resource.data.title is string && request.resource.data.title.size() > 0
-                    && request.resource.data.review_text is string && request.resource.data.review_text.size() > 0
-                    && request.resource.data.date is string // Datum van review (YYYY-MM-DD)
+                    // Validatie van inkomende data:
+                    && request.resource.data.rating is number && request.resource.data.rating >= 0 && request.resource.data.rating <= 10 // Interne schaal 0-10
+                    && request.resource.data.reviewer_name is string && request.resource.data.reviewer_name.size() > 1 && request.resource.data.reviewer_name.size() < 100
+                    && request.resource.data.title is string && request.resource.data.title.size() > 4 && request.resource.data.title.size() < 150
+                    && request.resource.data.review_text is string && request.resource.data.review_text.size() > 19 && request.resource.data.review_text.size() < 1000
+                    && request.resource.data.date is string // Datum van review (YYYY-MM-DD formaat)
                     && request.resource.data.createdAt == request.time // Moet server timestamp zijn
-                    // Gebruikers mogen niet zelf de review goedkeuren bij aanmaak.
+                    // Gebruikers mogen niet zelf de review goedkeuren bij aanmaak; isApproved is null of false.
                     && (request.resource.data.isApproved == null || request.resource.data.isApproved == false);
+                    // Optioneel: && request.resource.data.userId == request.auth.uid; // Als je de userId van de reviewer opslaat
 
-      // Alleen admins mogen reviews updaten (bijv. isApproved veld) en verwijderen.
-      allow update, delete: if request.auth != null && request.auth.token.admin == true;
+      // Alleen admins mogen reviews updaten (bijv. isApproved veld, response) en verwijderen.
+      allow update: if isAdmin()
+                    // Toestaan dat admin specifieke velden update, zoals isApproved en response.
+                    // Voorbeeld: && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isApproved', 'response', 'updatedAt'])
+                    // Voor nu, houd het simpeler, maar verfijn dit als de update-logica specifieker wordt.
+                    && (request.resource.data.updatedAt == null || request.resource.data.updatedAt == request.time); // Optioneel updatedAt veld
+      allow delete: if isAdmin();
     }
 
     // Courses collection
@@ -40,13 +52,27 @@ service cloud.firestore {
       allow read: if true;
       
       // Alleen admins mogen cursussen aanmaken, bijwerken of verwijderen.
-      allow create, update, delete: if request.auth != null && request.auth.token.admin == true;
-      // Overweeg validatie toe te voegen voor cursusdata bij create/update, bijv.:
-      // && request.resource.data.cursusNaam is string && request.resource.data.cursusNaam.size() > 0
-      // && request.resource.data.verkoopprijs is number && request.resource.data.verkoopprijs >= 0
-      // && request.resource.data.datum is timestamp
-      // && request.resource.data.createdAt == request.time (voor create)
-      // && request.resource.data.updatedAt == request.time (voor update)
+      allow create: if isAdmin()
+                    // Basis validaties voor het aanmaken van cursussen:
+                    && request.resource.data.cursusNaam is string && request.resource.data.cursusNaam.size() > 0
+                    && request.resource.data.verkoopprijs is number // Zorg dat dit een getal is in Firestore
+                    && request.resource.data.datum is timestamp // Firestore Timestamp object
+                    && request.resource.data.createdAt == request.time
+                    && request.resource.data.updatedAt == request.time
+                    && request.resource.data.isPublished is bool;
+                    // Voeg hier meer validaties toe voor andere verplichte velden en hun types.
+
+      allow update: if isAdmin()
+                    && request.resource.data.cursusNaam is string && request.resource.data.cursusNaam.size() > 0
+                    && request.resource.data.verkoopprijs is number
+                    && request.resource.data.datum is timestamp
+                    // createdAt mag niet veranderen bij een update
+                    && request.resource.data.createdAt == resource.data.createdAt 
+                    && request.resource.data.updatedAt == request.time
+                    && request.resource.data.isPublished is bool;
+                    // Voeg hier meer validaties toe
+
+      allow delete: if isAdmin();
     }
   }
 }
