@@ -1,0 +1,52 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users collection (optioneel, maar goede praktijk)
+    // - Ingelogde gebruikers kunnen hun eigen gebruikersdocument lezen en schrijven.
+    // - Admins (met custom claim admin:true) kunnen elk gebruikersdocument lezen en schrijven.
+    match /users/{userId} {
+      allow read, write: if request.auth != null && (request.auth.uid == userId || request.auth.token.admin == true);
+      // Toevoegen: Validatie voor de data die een gebruiker mag schrijven naar zijn eigen profiel.
+    }
+
+    // Reviews collection
+    match /reviews/{reviewId} {
+      // Iedereen mag goedgekeurde reviews lezen.
+      // Admins mogen alle reviews lezen (ook niet-goedgekeurde).
+      allow read: if resource.data.isApproved == true || (request.auth != null && request.auth.token.admin == true);
+      
+      // Alleen ingelogde gebruikers mogen reviews aanmaken.
+      allow create: if request.auth != null
+                    // Basisvalidatie voor inkomende data:
+                    && request.resource.data.rating >= 0 && request.resource.data.rating <= 10 // Interne schaal
+                    && request.resource.data.reviewer_name is string && request.resource.data.reviewer_name.size() > 0
+                    && request.resource.data.title is string && request.resource.data.title.size() > 0
+                    && request.resource.data.review_text is string && request.resource.data.review_text.size() > 0
+                    && request.resource.data.date is string // Datum van review (YYYY-MM-DD)
+                    && request.resource.data.createdAt == request.time // Moet server timestamp zijn
+                    // Gebruikers mogen niet zelf de review goedkeuren bij aanmaak.
+                    && (request.resource.data.isApproved == null || request.resource.data.isApproved == false);
+
+      // Alleen admins mogen reviews updaten (bijv. isApproved veld) en verwijderen.
+      allow update, delete: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Courses collection
+    match /courses/{courseId} {
+      // Iedereen mag cursusinformatie lezen.
+      allow read: if true;
+      
+      // Alleen admins mogen cursussen aanmaken, bijwerken of verwijderen.
+      allow create, update, delete: if request.auth != null && request.auth.token.admin == true;
+      // Overweeg validatie toe te voegen voor cursusdata bij create/update, bijv.:
+      // && request.resource.data.cursusNaam is string && request.resource.data.cursusNaam.size() > 0
+      // && request.resource.data.verkoopprijs is number && request.resource.data.verkoopprijs >= 0
+      // && request.resource.data.datum is timestamp
+      // && request.resource.data.createdAt == request.time (voor create)
+      // && request.resource.data.updatedAt == request.time (voor update)
+    }
+  }
+}
