@@ -3,10 +3,10 @@
 
 import { db } from '@/lib/firebase';
 import { doc, updateDoc, deleteDoc, collection, writeBatch, Timestamp, getDocs, query, where, limit } from 'firebase/firestore';
-import type { Opleiding, CursusDetail, Locatie, GecombineerdeCursus, FirestoreCourseDocument, PlanningEntry } from '@/types/opleidingen';
+import type { FirestoreCourseDocument, PlanningEntry } from '@/types/opleidingen';
 import fs from 'fs/promises';
 import path from 'path';
-import { fetchAndCache } from '@/lib/cache'; 
+// fetchAndCache is niet meer nodig hier nu we alles uit Firestore halen voor de admin sectie.
 
 // --- Review Actions ---
 export async function approveReview(reviewId: string): Promise<{ success: boolean, error?: string }> {
@@ -120,33 +120,31 @@ export async function seedCoursesToFirestore(): Promise<{ success: boolean, mess
       const datumTimestamp = parseDdMmYyyyToTimestamp(entry.Datum);
       if (!datumTimestamp) {
         console.warn(`[SEED] Datum kon niet worden geparsed voor entry ${index}, item overgeslagen:`, entry.Cursus, entry.Datum);
-        return; // Sla dit item over als de datum ongeldig is
+        return; 
       }
 
       const firestoreDoc: FirestoreCourseDocument = {
-        opleidingId: `planning_item_${index}_${entry.Cursus.replace(/\W/g, '')}_${entry.Datum.replace(/-/g, '')}`, // Simpel gegenereerd ID
+        opleidingId: `planning_item_${index}_${entry.Cursus.replace(/\W/g, '')}_${entry.Datum.replace(/-/g, '')}`, 
         datum: datumTimestamp,
         begintijd: entry.Begin,
         eindtijd: entry.Eind,
         cursusNaam: entry.Cursus,
-        // cursusId, locatieId, cursusLink, cursusOmschrijving zijn niet in de nieuwe JSON
         locatieNaam: entry.Locatie,
-        // opdrachtgeverId niet in nieuwe JSON
         inkoopprijs: parseFloatFromCurrencyString(entry.Inkoopprijs),
         verkoopprijs: parseFloatFromCurrencyString(entry.VerkoopPrijs) || 0,
         SOOB: parseFloatFromCurrencyString(entry.SOOB),
         puntenCode95: entry["Punten Code95"] || undefined,
         branche: entry.Branche,
         instructeur: entry.Instructeur === "Nvt" ? null : entry.Instructeur,
-        // instructeurId niet in nieuwe JSON
         maximumAantal: entry.maximum_aantal || 0,
         aantalGereserveerd: entry.aantal_gereserveerd || 0,
         isPublished: true,
         createdAt: now,
         updatedAt: now,
+        // cursusId, locatieId, cursusLink, cursusOmschrijving, opdrachtgeverId, instructeurId zijn niet in deze JSON
       };
       
-      const newCourseRef = doc(coursesCollectionRef); // Auto-generated Firestore ID
+      const newCourseRef = doc(coursesCollectionRef); 
       batch.set(newCourseRef, firestoreDoc);
       importedCount++;
     });
@@ -164,45 +162,5 @@ export async function seedCoursesToFirestore(): Promise<{ success: boolean, mess
   }
 }
 
-// De oude getAdminCourseData die de 3 externe JSONs haalde is hier niet meer relevant voor seeding.
-// Als het ergens anders nog gebruikt wordt, moet het apart worden bekeken.
-// Voor nu, focus op Firestore.
-const OPLEIDINGEN_CACHE_KEY = 'opleidingen_data_v1'; 
-const CURSUS_DETAILS_CACHE_KEY = 'cursus_details_data_v1';
-const LOCATIES_CACHE_KEY = 'locaties_data_v1';
-
-export async function getAdminCourseData_OLD(): Promise<{ courses: GecombineerdeCursus[], error?: string }> {
-  try {
-    const [opleidingenData, cursusDetailsData, locatiesData] = await Promise.all([
-      fetchAndCache<Opleiding>('https://opleidingen.frissestart.nl/wp-json/mo/v1/opleidingen', OPLEIDINGEN_CACHE_KEY),
-      fetchAndCache<CursusDetail>('https://opleidingen.frissestart.nl/wp-json/mo/v1/cursussen', CURSUS_DETAILS_CACHE_KEY),
-      fetchAndCache<Locatie>('https://opleidingen.frissestart.nl/wp-json/mo/v1/locaties', LOCATIES_CACHE_KEY),
-    ]);
-
-    const cursusDetailsMap = new Map<string, CursusDetail>();
-    cursusDetailsData.forEach(detail => cursusDetailsMap.set(detail.id.toString(), detail));
-
-    const locatiesMap = new Map<string, Locatie>();
-    locatiesData.forEach(locatie => locatiesMap.set(locatie.id.toString(), locatie));
-
-    const combinedCourses = opleidingenData.map(opleiding => {
-      const detail = cursusDetailsMap.get(opleiding.cursus_id);
-      const locatie = locatiesMap.get(opleiding.locatie_id);
-      const maxAantal = parseInt(opleiding.maximum_aantal, 10);
-      const gereserveerd = parseInt(opleiding.aantal_gereserveerd || '0', 10);
-      const vrijePlekken = isNaN(maxAantal) || isNaN(gereserveerd) ? undefined : maxAantal - gereserveerd;
-      return {
-        ...opleiding,
-        cursusNaam: detail?.naam || `Cursus ID: ${opleiding.cursus_id}`,
-        cursusLink: detail?.link,
-        locatieNaam: locatie?.naam || `Locatie ID: ${opleiding.locatie_id}`,
-        vrijePlekken,
-      };
-    }).sort((a, b) => new Date(a.datum).getTime() - new Date(b.datum).getTime());
-    
-    return { courses: combinedCourses };
-  } catch (error) {
-    console.error("Error fetching admin course data in server action:", error);
-    return { courses: [], error: (error instanceof Error ? error.message : String(error)) };
-  }
-}
+// De getAdminCourseData_OLD is nu niet meer nodig en wordt verwijderd.
+// De admin pagina haalt data nu direct uit Firestore.

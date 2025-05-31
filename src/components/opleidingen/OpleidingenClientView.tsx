@@ -10,14 +10,12 @@ import { Clock, BarChart3, Zap, BookOpen, CheckCircle, MapPinIcon, EuroIcon, Awa
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import type { Opleiding, CursusDetail, Locatie, GecombineerdeCursus } from '@/types/opleidingen';
+import type { GecombineerdeCursus } from '@/types/opleidingen';
 import { format, parseISO, getYear, getMonth } from 'date-fns';
 import { nl } from 'date-fns/locale';
 
 interface OpleidingenClientViewProps {
-  initialOpleidingenData: Opleiding[];
-  initialCursusDetailsData: CursusDetail[];
-  initialLocatiesData: Locatie[];
+  initialCourses: GecombineerdeCursus[];
 }
 
 const ITEMS_PER_PAGE = 9;
@@ -30,11 +28,7 @@ const voordelen = [
   { text: "Alles goed geregeld", icon: <CheckCircle size={20} className="text-primary mr-2" /> },
 ];
 
-export function OpleidingenClientView({
-  initialOpleidingenData,
-  initialCursusDetailsData,
-  initialLocatiesData,
-}: OpleidingenClientViewProps) {
+export function OpleidingenClientView({ initialCourses }: OpleidingenClientViewProps) {
   const [selectedCursus, setSelectedCursus] = useState<string>('');
   const [selectedLocatie, setSelectedLocatie] = useState<string>('');
   const [selectedMonth, setSelectedMonth] = useState<string>('');
@@ -44,87 +38,56 @@ export function OpleidingenClientView({
   const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
 
   const observer = useRef<IntersectionObserver | null>(null);
-  const lastCourseElementRef = useCallback((node: HTMLDivElement | null) => {
-    if (isLoadingMore) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && combinedAndFilteredCourses.length > visibleCoursesCount) {
-        setIsLoadingMore(true);
-        setTimeout(() => { // Simulate network delay / debounce
-          setVisibleCoursesCount(prevCount => prevCount + ITEMS_PER_PAGE);
-          setIsLoadingMore(false);
-        }, 500);
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [isLoadingMore, visibleCoursesCount]);
-
-  const cursusDetailsMap = useMemo(() => {
-    const map = new Map<string, CursusDetail>();
-    initialCursusDetailsData.forEach(detail => map.set(detail.id.toString(), detail));
-    return map;
-  }, [initialCursusDetailsData]);
-
-  const locatiesMap = useMemo(() => {
-    const map = new Map<string, Locatie>();
-    initialLocatiesData.forEach(locatie => map.set(locatie.id.toString(), locatie));
-    return map;
-  }, [initialLocatiesData]);
 
   const uniqueCursusNamen = useMemo(() => {
     const namen = new Set<string>();
-    initialOpleidingenData.forEach(opl => {
-      const detail = cursusDetailsMap.get(opl.cursus_id);
-      if (detail && typeof detail.naam === 'string' && detail.naam.trim().length > 0) {
-        namen.add(detail.naam.trim());
+    initialCourses.forEach(course => {
+      if (course.cursusNaam && course.cursusNaam.trim().length > 0) {
+        namen.add(course.cursusNaam.trim());
       }
     });
     return Array.from(namen).sort();
-  }, [initialOpleidingenData, cursusDetailsMap]);
+  }, [initialCourses]);
 
   const uniqueLocatieNamen = useMemo(() => {
     const namen = new Set<string>();
-    initialOpleidingenData.forEach(opl => {
-      const locatie = locatiesMap.get(opl.locatie_id);
-      if (locatie && typeof locatie.naam === 'string' && locatie.naam.trim().length > 0) {
-        namen.add(locatie.naam.trim());
+    initialCourses.forEach(course => {
+      if (course.locatieNaam && course.locatieNaam.trim().length > 0) {
+        namen.add(course.locatieNaam.trim());
       }
     });
     return Array.from(namen).sort();
-  }, [initialOpleidingenData, locatiesMap]);
+  }, [initialCourses]);
 
   const uniqueMonths = useMemo(() => {
-    const months = new Set<string>();
+    const monthsSet = new Set<string>();
     const nu = new Date();
     nu.setHours(0,0,0,0);
 
-    initialOpleidingenData.forEach(opl => {
-      if (!opl.datum) return;
+    initialCourses.forEach(course => {
+      if (!course.datum) return;
       try {
-        const [year, month, day] = opl.datum.split('-').map(Number);
-        if (isNaN(year) || isNaN(month) || isNaN(day)) return;
-        const cursusDatum = new Date(year, month -1, day);
-        cursusDatum.setHours(0,0,0,0);
-
-        if (cursusDatum >= nu) {
+        const cursusDatum = parseISO(course.datum); // Datum is al YYYY-MM-DD
+         if (cursusDatum >= nu) {
             const monthYear = format(cursusDatum, 'LLLL yyyy', { locale: nl });
-            // Store as YYYY-MM for value, and display format for label
-            const value = `${year}-${String(month).padStart(2, '0')}`;
-            months.add(JSON.stringify({label: monthYear.charAt(0).toUpperCase() + monthYear.slice(1), value: value }));
+            const value = `${getYear(cursusDatum)}-${String(getMonth(cursusDatum) + 1).padStart(2, '0')}`;
+            monthsSet.add(JSON.stringify({label: monthYear.charAt(0).toUpperCase() + monthYear.slice(1), value: value }));
         }
       } catch (e) {
-        console.error("Error parsing date for month filter:", opl.datum, e);
+        console.error("Error parsing date for month filter:", course.datum, e);
       }
     });
     
-    return Array.from(months)
+    return Array.from(monthsSet)
       .map(m => JSON.parse(m) as {label: string, value: string})
-      .sort((a, b) => a.value.localeCompare(b.value)); // Sort by YYYY-MM
-  }, [initialOpleidingenData]);
-
+      .sort((a, b) => a.value.localeCompare(b.value));
+  }, [initialCourses]);
+  
   const resetVisibleCount = () => {
     setVisibleCoursesCount(ITEMS_PER_PAGE);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+     if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
   
   useEffect(() => {
@@ -133,72 +96,65 @@ export function OpleidingenClientView({
 
 
   const combinedAndFilteredCourses: GecombineerdeCursus[] = useMemo(() => {
-    const nu = new Date();
-    nu.setHours(0, 0, 0, 0);
-
-    return initialOpleidingenData
-      .map(opleiding => {
-        const detail = cursusDetailsMap.get(opleiding.cursus_id);
-        const locatie = locatiesMap.get(opleiding.locatie_id);
-        const maxAantal = parseInt(opleiding.maximum_aantal, 10);
-        const gereserveerd = parseInt(opleiding.aantal_gereserveerd || '0', 10);
-        const vrijePlekken = isNaN(maxAantal) || isNaN(gereserveerd) ? undefined : maxAantal - gereserveerd;
-
-        return {
-          ...opleiding,
-          cursusNaam: detail?.naam,
-          cursusOmschrijving: detail?.omschrijving || `Een cursus in ${opleiding.branche || 'diverse branches'} aangeboden door FrisseStart.`,
-          cursusLink: detail?.link,
-          locatieNaam: locatie?.naam || `Locatie ID: ${opleiding.locatie_id}`,
-          vrijePlekken: vrijePlekken,
-        };
-      })
+    return initialCourses
       .filter(course => {
-        if (!course.datum) return false;
-        const [year, month, day] = course.datum.split('-').map(Number);
-        if (isNaN(year) || isNaN(month) || isNaN(day)) return false;
-        const cursusDatum = new Date(year, month - 1, day);
-        cursusDatum.setHours(0,0,0,0);
-        
-        if (cursusDatum < nu) return false; // Verberg cursussen in het verleden
-
         if (selectedCursus && course.cursusNaam !== selectedCursus) return false;
         if (selectedLocatie && course.locatieNaam !== selectedLocatie) return false;
-        if (showCode95Only && (!course.punten_code95 || parseFloat(course.punten_code95) <= 0)) return false;
+        if (showCode95Only && (!course.puntenCode95 || parseFloat(course.puntenCode95) <= 0)) return false;
         if (showSoobOnly && (!course.SOOB || parseFloat(course.SOOB) <= 0)) return false;
         
-        if (selectedMonth) {
+        if (selectedMonth && course.datum) {
           const [selectedYear, selectedMon] = selectedMonth.split('-');
-          if (year !== parseInt(selectedYear) || month !== parseInt(selectedMon)) {
+          const courseDate = parseISO(course.datum);
+          if (getYear(courseDate) !== parseInt(selectedYear) || (getMonth(courseDate) + 1) !== parseInt(selectedMon)) {
             return false;
           }
         }
         return true;
-      })
-      .sort((a, b) => {
-         const dateA = new Date(a.datum.split('-').map(Number).join('-'));
-         const dateB = new Date(b.datum.split('-').map(Number).join('-'));
-         return dateA.getTime() - dateB.getTime();
       });
-  }, [initialOpleidingenData, cursusDetailsMap, locatiesMap, selectedCursus, selectedLocatie, selectedMonth, showCode95Only, showSoobOnly]);
+      // Sortering gebeurt al in de getCourses functie (server-side)
+  }, [initialCourses, selectedCursus, selectedLocatie, selectedMonth, showCode95Only, showSoobOnly]);
 
   const coursesToDisplay = useMemo(() => {
     return combinedAndFilteredCourses.slice(0, visibleCoursesCount);
   }, [combinedAndFilteredCourses, visibleCoursesCount]);
 
+  const loadMoreCourses = useCallback(() => {
+    if (isLoadingMore || visibleCoursesCount >= combinedAndFilteredCourses.length) return;
+
+    setIsLoadingMore(true);
+    setTimeout(() => { 
+      setVisibleCoursesCount(prevCount => prevCount + ITEMS_PER_PAGE);
+      setIsLoadingMore(false);
+    }, 300); 
+  }, [isLoadingMore, visibleCoursesCount, combinedAndFilteredCourses.length]);
+
+  const lastCourseElementRef = useCallback((node: HTMLDivElement | null) => {
+    if (isLoadingMore) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && visibleCoursesCount < combinedAndFilteredCourses.length) {
+        loadMoreCourses();
+      }
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [isLoadingMore, loadMoreCourses, visibleCoursesCount, combinedAndFilteredCourses.length]);
+
 
   const getDuration = (start: string, end: string): string => {
+    if (!start || !end) return 'Tijd onbekend';
     const startTime = start.substring(0, 5);
     const endTime = end.substring(0, 5);
     return `Van ${startTime} tot ${endTime}`;
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDateDisplay = (dateString: string) => {
     try {
         return format(parseISO(dateString), 'dd-MM-yyyy', { locale: nl });
     } catch (e) {
-        console.error("Error formatting date:", dateString, e);
-        return dateString; // fallback
+        return dateString; 
     }
   };
 
@@ -250,7 +206,7 @@ export function OpleidingenClientView({
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
+           <div className="space-y-2">
             <Label htmlFor="filter-maand" className="font-medium">Maand</Label>
             <Select value={selectedMonth} onValueChange={(value) => setSelectedMonth(value === '_all_months_' ? '' : value)}>
               <SelectTrigger id="filter-maand">
@@ -279,14 +235,14 @@ export function OpleidingenClientView({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {coursesToDisplay.map((course, index) => (
              <Card 
-                key={course.id} 
+                key={course.firestoreId} 
                 className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 group bg-card"
                 ref={index === coursesToDisplay.length - 1 ? lastCourseElementRef : null}
               >
               <CardHeader className="p-0 relative">
                 <Image
                   src={`https://placehold.co/400x250.png?text=${encodeURIComponent(course.cursusNaam || 'Cursus')}`}
-                  alt={course.cursusNaam || `Opleiding ID ${course.id}`}
+                  alt={course.cursusNaam || `Opleiding ID ${course.opleidingId}`}
                   width={400}
                   height={250}
                   className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-300"
@@ -296,10 +252,10 @@ export function OpleidingenClientView({
               <CardContent className="p-6 flex-grow">
                 <CardTitle className="text-xl font-semibold text-foreground mb-2 flex items-center">
                   <BookOpen size={20} className="mr-2 text-primary" />
-                  {course.cursusNaam || `Opleiding ${course.cursus_id}`}
+                  {course.cursusNaam || `Opleiding ${course.opleidingId}`}
                 </CardTitle>
                 <CardDescription className="text-muted-foreground mb-4 text-sm line-clamp-3" title={course.cursusOmschrijving}>
-                  {course.cursusOmschrijving || `Gepland op: ${formatDate(course.datum)}. Locatie: ${course.locatieNaam}.`}
+                  {course.cursusOmschrijving || `Gepland op: ${formatDateDisplay(course.datum)}. Locatie: ${course.locatieNaam}.`}
                 </CardDescription>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {course.branche && (
@@ -313,25 +269,25 @@ export function OpleidingenClientView({
                       <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">SOOB: €{course.SOOB}</span>
                   )}
                 </div>
-                 {course.punten_code95 && parseFloat(course.punten_code95) > 0 && (
-                    <p className="text-xs text-muted-foreground mb-2">Code 95: {course.punten_code95} punten</p>
+                 {course.puntenCode95 && parseFloat(course.puntenCode95) > 0 && (
+                    <p className="text-xs text-muted-foreground mb-2">Code 95: {course.puntenCode95} punten</p>
                   )}
               </CardContent>
               <CardFooter className="p-6 border-t bg-muted/30">
                 <div className="w-full space-y-3">
                   <div className="flex justify-between items-center text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1.5"><Clock size={16} className="text-primary" /> {formatDate(course.datum)}, {getDuration(course.begintijd, course.eindtijd)}</span>
+                    <span className="flex items-center gap-1.5"><Clock size={16} className="text-primary" /> {formatDateDisplay(course.datum)}, {getDuration(course.begintijd, course.eindtijd)}</span>
                     {course.vrijePlekken !== undefined ? (
                       <span className={`flex items-center gap-1.5 ${course.vrijePlekken > 0 ? 'text-green-600' : 'text-red-600'}`}>
                         <BarChart3 size={16} className={course.vrijePlekken > 0 ? 'text-green-600' : 'text-red-600'} />
                         {course.vrijePlekken > 0 ? `${course.vrijePlekken} plekken vrij` : 'Volgeboekt'}
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1.5"><BarChart3 size={16} className="text-primary" /> Max: {course.maximum_aantal}</span>
+                       <span className="flex items-center gap-1.5"><BarChart3 size={16} className="text-primary" /> Max: {course.maximumAantal}</span>
                     )}
                   </div>
                   <Button asChild className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground">
-                     <Link href={course.cursusLink || `/opleidingsaanbod/${course.id}`} passHref legacyBehavior>
+                     <Link href={course.cursusLink || `/opleidingsaanbod/${course.opleidingId}`} passHref legacyBehavior>
                         <a>Meer Info & Inschrijven <Zap size={16} className="ml-2"/></a>
                     </Link>
                   </Button>
@@ -354,9 +310,12 @@ export function OpleidingenClientView({
       )}
       {isLoadingMore && (
         <div className="flex justify-center items-center py-8 text-muted-foreground">
-          <Loader2 className="h-8 w-8 animate-spin mr-3" />
+          <Loader2 className="h-8 w-8 animate-spin mr-3 text-primary" />
           <span>Meer cursussen laden...</span>
         </div>
+      )}
+       {!isLoadingMore && visibleCoursesCount >= combinedAndFilteredCourses.length && combinedAndFilteredCourses.length > ITEMS_PER_PAGE && (
+        <p className="text-center text-muted-foreground mt-12">U heeft alle relevante cursussen bekeken.</p>
       )}
        <div className="mt-12 md:mt-16 text-center">
         <p className="text-lg text-muted-foreground mb-4">Kunt u niet vinden wat u zoekt?</p>

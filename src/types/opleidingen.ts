@@ -2,6 +2,8 @@
 import type { Timestamp } from 'firebase/firestore';
 
 export interface Opleiding {
+  // Deze interface is nu minder relevant voor de hoofddataflow,
+  // maar kan nog gebruikt worden als type voor de externe API indien nodig.
   id: string;
   datum: string; 
   begintijd: string;
@@ -36,20 +38,31 @@ export interface Locatie {
   plaats?: string;
 }
 
-export interface GecombineerdeCursus extends Opleiding {
-  firestoreId?: string; 
+// Herziene GecombineerdeCursus voor data uit Firestore
+export interface GecombineerdeCursus {
+  firestoreId: string; 
+  opleidingId: string; 
+  datum: string; // YYYY-MM-DD string
+  begintijd: string;
+  eindtijd: string;
   cursusNaam?: string;
-  cursusOmschrijving?: string;
   cursusLink?: string;
+  cursusOmschrijving?: string;
   locatieNaam?: string;
+  inkoopprijs?: string;
+  verkoopprijs: string;
+  SOOB?: string;
+  puntenCode95?: string;
+  branche?: string;
+  instructeur?: string | null;
+  maximumAantal: string;
+  aantalGereserveerd?: string;
   vrijePlekken?: number;
-  kortingsPrijs?: string;
-  originelePrijs?: string;
-  datumTimestamp?: Timestamp; 
-  isPublished?: boolean; 
+  isPublished?: boolean;
+  // Velden die specifiek van Firestore komen en nuttig kunnen zijn:
+  datumTimestamp?: Timestamp; // De originele Firestore Timestamp voor preciezere filtering/sortering
 }
 
-// Type voor het nieuwe JSON formaat
 export interface PlanningEntry {
   Datum: string;
   Begin: string;
@@ -59,7 +72,7 @@ export interface PlanningEntry {
   Inkoopprijs: string;
   VerkoopPrijs: string;
   SOOB: string;
-  "Punten Code95": number; // Key met spatie
+  "Punten Code95": number;
   Branche: string;
   Instructeur: string;
   maximum_aantal: number;
@@ -67,15 +80,15 @@ export interface PlanningEntry {
 }
 
 export interface FirestoreCourseDocument {
-  opleidingId: string; // Uniek ID per cursus-event, gegenereerd als het niet in bron zit
+  opleidingId: string; 
   datum: Timestamp;
   begintijd: string;
   eindtijd: string;
-  cursusId?: string; // Optioneel als het niet direct uit de nieuwe bron komt
+  cursusId?: string; 
   cursusNaam?: string;
   cursusLink?: string;
   cursusOmschrijving?: string;
-  locatieId?: string; // Optioneel
+  locatieId?: string; 
   locatieNaam?: string;
   opdrachtgeverId?: string | null;
   inkoopprijs?: number;
@@ -91,3 +104,4 @@ export interface FirestoreCourseDocument {
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
+

@@ -7,88 +7,65 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Clock, BarChart3, Zap, BookOpen, MapPinIcon, EuroIcon, TagIcon, AlertTriangle } from 'lucide-react';
-import type { Opleiding, CursusDetail, Locatie, GecombineerdeCursus } from '@/types/opleidingen';
+import type { GecombineerdeCursus } from '@/types/opleidingen';
+import { format, parseISO, addDays } from 'date-fns';
+import { nl } from 'date-fns/locale';
 
 interface ActieVoordeelClientViewProps {
-  initialOpleidingenData: Opleiding[];
-  initialCursusDetailsData: CursusDetail[];
-  initialLocatiesData: Locatie[];
+  initialCourses: GecombineerdeCursus[];
 }
 
-export function ActieVoordeelClientView({
-  initialOpleidingenData,
-  initialCursusDetailsData,
-  initialLocatiesData,
-}: ActieVoordeelClientViewProps) {
-  const cursusDetailsMap = useMemo(() => {
-    const map = new Map<string, CursusDetail>();
-    initialCursusDetailsData.forEach(detail => map.set(detail.id.toString(), detail));
-    return map;
-  }, [initialCursusDetailsData]);
-
-  const locatiesMap = useMemo(() => {
-    const map = new Map<string, Locatie>();
-    initialLocatiesData.forEach(locatie => map.set(locatie.id.toString(), locatie));
-    return map;
-  }, [initialLocatiesData]);
-
+export function ActieVoordeelClientView({ initialCourses }: ActieVoordeelClientViewProps) {
+  
   const actieCursussen: GecombineerdeCursus[] = useMemo(() => {
     const nu = new Date();
     nu.setHours(0, 0, 0, 0); // Begin van de huidige dag
 
-    const grensDatum = new Date();
-    grensDatum.setDate(nu.getDate() + 31);
-    grensDatum.setHours(23, 59, 59, 999); // Eind van de 31e dag
+    const grensDatum = addDays(nu, 31); // Eind van de 31e dag (inclusief vandaag)
+    grensDatum.setHours(23, 59, 59, 999);
 
-    return initialOpleidingenData
-      .map(opleiding => {
-        const detail = cursusDetailsMap.get(opleiding.cursus_id);
-        const locatie = locatiesMap.get(opleiding.locatie_id);
-        const maxAantal = parseInt(opleiding.maximum_aantal, 10);
-        const gereserveerd = parseInt(opleiding.aantal_gereserveerd || '0', 10);
-        const vrijePlekken = isNaN(maxAantal) || isNaN(gereserveerd) ? undefined : maxAantal - gereserveerd;
+    return initialCourses
+      .map(course => {
+        if (!course.verkoopprijs) return { ...course, kortingsPrijs: course.verkoopprijs, originelePrijs: course.verkoopprijs };
         
-        const originelePrijs = parseFloat(opleiding.verkoopprijs);
-        const kortingsPrijs = !isNaN(originelePrijs) ? (originelePrijs * 0.90).toFixed(2) : opleiding.verkoopprijs;
+        const originelePrijs = parseFloat(course.verkoopprijs);
+        const kortingsPrijs = !isNaN(originelePrijs) ? (originelePrijs * 0.90).toFixed(2) : course.verkoopprijs;
 
         return {
-          ...opleiding,
-          cursusNaam: detail?.naam,
-          cursusOmschrijving: detail?.omschrijving || `Een cursus in ${opleiding.branche || 'diverse branches'} aangeboden door FrisseStart.`,
-          cursusLink: detail?.link,
-          locatieNaam: locatie?.naam || `Locatie ID: ${opleiding.locatie_id}`,
-          vrijePlekken: vrijePlekken,
+          ...course,
           kortingsPrijs: kortingsPrijs,
           originelePrijs: originelePrijs.toFixed(2),
         };
       })
       .filter(course => {
         if (!course.datum) return false;
-        // Verwacht datumformaat YYYY-MM-DD
-        const [year, month, day] = course.datum.split('-').map(Number);
-        if (isNaN(year) || isNaN(month) || isNaN(day)) return false;
-        
-        const cursusDatum = new Date(year, month - 1, day); // Maand is 0-geïndexeerd
-        cursusDatum.setHours(0,0,0,0); // Normaliseer naar begin van de dag
-        
+        let cursusDatum;
+        try {
+          cursusDatum = parseISO(course.datum); // Verwacht YYYY-MM-DD
+          cursusDatum.setHours(0,0,0,0); // Normaliseer naar begin van de dag
+        } catch (e) {
+          console.error("Ongeldig datumformaat voor actiecursus:", course.datum, e);
+          return false;
+        }
         return cursusDatum >= nu && cursusDatum <= grensDatum;
-      })
-      .sort((a, b) => {
-        const dateA = new Date(a.datum.split('-').map(Number).join('-'));
-        const dateB = new Date(b.datum.split('-').map(Number).join('-'));
-        return dateA.getTime() - dateB.getTime();
       });
-  }, [initialOpleidingenData, cursusDetailsMap, locatiesMap]);
+      // Sortering gebeurt al server-side in getCourses()
+  }, [initialCourses]);
 
-  const getDuration = (start: string, end: string): string => {
+  const getDuration = (start?: string, end?: string): string => {
+    if (!start || !end) return 'Tijd onbekend';
     const startTime = start.substring(0, 5);
     const endTime = end.substring(0, 5);
     return `Van ${startTime} tot ${endTime}`;
   };
 
-  const formatDate = (dateString: string) => {
-    const [year, month, day] = dateString.split('-');
-    return `${day}-${month}-${year}`;
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Datum onbekend';
+    try {
+      return format(parseISO(dateString), 'dd-MM-yyyy', { locale: nl });
+    } catch (e) {
+      return dateString; 
+    }
   };
 
   return (
@@ -96,14 +73,14 @@ export function ActieVoordeelClientView({
       {actieCursussen.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {actieCursussen.map((course) => (
-            <Card key={course.id} className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 group bg-card border-primary/30">
+            <Card key={course.firestoreId} className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 group bg-card border-primary/30">
               <CardHeader className="p-0 relative">
                 <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full shadow-md z-10 flex items-center">
                   <TagIcon size={14} className="mr-1.5" /> 10% KORTING
                 </div>
                 <Image
                   src={`https://placehold.co/400x250.png?text=${encodeURIComponent(course.cursusNaam || 'Actie Cursus')}`}
-                  alt={course.cursusNaam || `Opleiding ID ${course.id}`}
+                  alt={course.cursusNaam || `Opleiding ID ${course.opleidingId}`}
                   width={400}
                   height={250}
                   className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-300"
@@ -113,7 +90,7 @@ export function ActieVoordeelClientView({
               <CardContent className="p-6 flex-grow">
                 <CardTitle className="text-xl font-semibold text-foreground mb-2 flex items-center">
                   <BookOpen size={20} className="mr-2 text-primary" />
-                  {course.cursusNaam || `Opleiding ${course.cursus_id}`}
+                  {course.cursusNaam || `Opleiding ${course.opleidingId}`}
                 </CardTitle>
                 <CardDescription className="text-muted-foreground mb-4 text-sm line-clamp-3" title={course.cursusOmschrijving}>
                   {course.cursusOmschrijving || `Gepland op: ${formatDate(course.datum)}. Locatie: ${course.locatieNaam}.`}
@@ -130,8 +107,8 @@ export function ActieVoordeelClientView({
                       <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">SOOB: €{course.SOOB}</span>
                   )}
                 </div>
-                 {course.punten_code95 && parseFloat(course.punten_code95) > 0 && (
-                    <p className="text-xs text-muted-foreground mb-2">Code 95: {course.punten_code95} punten</p>
+                 {course.puntenCode95 && parseFloat(course.puntenCode95) > 0 && (
+                    <p className="text-xs text-muted-foreground mb-2">Code 95: {course.puntenCode95} punten</p>
                   )}
               </CardContent>
               <CardFooter className="p-6 border-t bg-muted/30">
@@ -144,11 +121,11 @@ export function ActieVoordeelClientView({
                         {course.vrijePlekken > 0 ? `${course.vrijePlekken} plekken vrij` : 'Volgeboekt'}
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1.5"><BarChart3 size={16} className="text-primary" /> Max: {course.maximum_aantal}</span>
+                      <span className="flex items-center gap-1.5"><BarChart3 size={16} className="text-primary" /> Max: {course.maximumAantal}</span>
                     )}
                   </div>
                   <Button asChild className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground">
-                     <Link href={course.cursusLink || `/opleidingsaanbod/${course.id}`} passHref legacyBehavior>
+                     <Link href={course.cursusLink || `/opleidingsaanbod/${course.opleidingId}`} passHref legacyBehavior>
                         <a>Meer Info & Inschrijven <Zap size={16} className="ml-2"/></a>
                     </Link>
                   </Button>
