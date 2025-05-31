@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { SectionContainer } from '@/components/ui/SectionContainer';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Forklift, FirstAidKit, HardHat } from 'lucide-react'; // Relevante iconen gekozen
+import { ArrowRight, Forklift, HeartPulse, HardHat } from 'lucide-react'; // FirstAidKit vervangen door HeartPulse
 
 const popularCourses = [
   {
@@ -12,7 +12,7 @@ const popularCourses = [
     description: "Leer veilig en efficiënt werken met een heftruck. Essentieel voor logistieke professionals en magazijnmedewerkers.",
     image: "https://placehold.co/400x250.png",
     dataAiHint: "forklift warehouse",
-    link: "/opleidingsaanbod", // Link naar algemeen aanbod, kan later specifiek gemaakt worden
+    link: "/opleidingsaanbod",
     icon: <Forklift className="h-8 w-8 text-primary mb-3" />,
   },
   {
@@ -21,7 +21,7 @@ const popularCourses = [
     image: "https://placehold.co/400x250.png",
     dataAiHint: "first aid emergency",
     link: "/opleidingsaanbod",
-    icon: <FirstAidKit className="h-8 w-8 text-primary mb-3" />,
+    icon: <HeartPulse className="h-8 w-8 text-primary mb-3" />, // FirstAidKit vervangen door HeartPulse
   },
   {
     title: "VCA Cursus (Basis & VOL)",
