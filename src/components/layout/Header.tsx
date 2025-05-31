@@ -20,7 +20,8 @@ import {
   LogIn,
   LogOut,
   UserPlus,
-  UserCircle
+  UserCircle,
+  ShieldCheck // Icon voor Beheer
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -28,10 +29,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from '@/context/AuthContext'; // Import useAuth
+import { useAuth } from '@/context/AuthContext';
 
 const opleidingsAanbodLink = { label: 'Opleidingsaanbod', icon: <BookOpenText className="h-5 w-5" /> };
 const onzeInstructeursLink = { href: '/onze-instructeurs', label: 'Onze Instructeurs', icon: <Users className="h-5 w-5 mr-2 md:mr-0" /> };
@@ -50,7 +50,7 @@ const opleidingsAanbodItems = [
 
 export function Header() {
   const pathname = usePathname();
-  const { user, signOut, isLoading } = useAuth(); // Gebruik de AuthContext
+  const { user, signOut, isLoading } = useAuth(); 
 
   const NavLinkItem = ({ href, label, icon, isMobile = false, className, onClick }: { href: string; label: string; icon?: React.ReactNode, isMobile?: boolean, className?: string, onClick?: () => void }) => (
     <Link
@@ -125,7 +125,7 @@ export function Header() {
                   'md:px-2 lg:px-3'
                 )}
               >
-                <span className="md:mr-1 lg:mr-2">{contactLink.icon}</span> {/* Using Contact icon as main for dropdown */}
+                <span className="md:mr-1 lg:mr-2">{contactLink.icon}</span> {}
                 <span className="group-data-[collapsible=icon]:hidden group-data-[state=expanded]:md:inline">{contactInfoDropdownLabel}</span>
                 <ChevronDown className="h-4 w-4 opacity-70 ml-1" />
               </Button>
@@ -162,12 +162,13 @@ export function Header() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                {/* Optioneel: Profiel link
-                <DropdownMenuItem asChild>
-                  <Link href="/profiel">Mijn Profiel</Link>
+                <DropdownMenuItem asChild className="cursor-pointer">
+                  <Link href="/admin" className="flex items-center">
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                    Beheer
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                */}
                 <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10">
                   <LogOut className="mr-2 h-4 w-4" />
                   Uitloggen
@@ -212,7 +213,7 @@ export function Header() {
                   <Image src="/images/logo.png" alt="FrisseStart Logo" width={120} height={32} />
                 </Link>
                 <nav className="flex flex-col gap-1 flex-grow">
-                  {/* Opleidingsaanbod Dropdown voor Mobiel */}
+                  {}
                   <p className="px-3 py-2 text-lg font-medium text-muted-foreground flex items-center gap-2">
                       {opleidingsAanbodLink.icon}
                       {opleidingsAanbodLink.label}
@@ -223,9 +224,9 @@ export function Header() {
                       ))}
                   </div>
                   <NavLinkItem {...onzeInstructeursLink} isMobile />
-                  {/* Info & Contact Dropdown voor Mobiel */}
+                  {}
                   <p className="px-3 py-2 text-lg font-medium text-muted-foreground flex items-center gap-2 mt-2">
-                       {contactLink.icon} {/* Using Contact icon */}
+                       {contactLink.icon} {}
                       {contactInfoDropdownLabel}
                   </p>
                   <div className="pl-6 flex flex-col gap-1 border-l-2 border-muted ml-3">
@@ -235,13 +236,18 @@ export function Header() {
                   </div>
                 </nav>
 
-                {/* Auth Knoppen Mobiel */}
+                {}
                 <div className="mt-auto pt-6 border-t border-border/40 space-y-3">
                   {isLoading ? (
                      <div className="h-10 w-full animate-pulse rounded-md bg-muted" />
                   ) : user ? (
                     <>
                       <div className="text-center text-sm text-muted-foreground mb-2 truncate">{user.email}</div>
+                       <Button asChild variant="outline" className="w-full flex items-center justify-center gap-2">
+                         <Link href="/admin">
+                            <ShieldCheck className="mr-2 h-5 w-5" /> Beheer
+                         </Link>
+                       </Button>
                       <Button onClick={signOut} variant="outline" className="w-full text-destructive border-destructive hover:bg-destructive/10">
                         <LogOut className="mr-2 h-5 w-5" /> Uitloggen
                       </Button>
