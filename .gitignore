@@ -11,81 +11,42 @@
 /.next/
 /out/
 
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
+# Production
+/build
 
-# Firebase Studio specific cache
-/.custom_cache/
+# Cache
+.custom_cache/
 
-# API keys and secrets
-# .env files are generally for local development secrets.
-# **Never commit .env files containing sensitive information directly.**
-# Instead, use environment variables provided by your hosting platform
-# or a secrets management solution.
+# Firebase
+serviceAccountKey.json # Belangrijk: service account keys mogen NOOIT in de repo!
+
+# Env files
 .env
 .env*.local
-.env.local
 .env.development.local
 .env.test.local
 .env.production.local
+*.env
 
-# Log files
+# Misc
+.DS_Store
+*.pem
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-logs
-*.log
+lerna-debug.log*
 
 # Editor directories and files
+.idea
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-*.sublime-workspace
-
-# Optional User specific files
-.idea
-.project
-.classpath
-.cproject
-.buildpath
-*.launch
-.settings/
-*.tmproj
-*.tmproject
-*.kdev4
-
-# Firebase
-# If you're using Firebase emulators, you might want to ignore their export data
-# firebase-export-*
-# .firebase/
-
-# Operating System Files
-.DS_Store
-._*
-Thumbs.db
-ehthumbs.db
-ehthumbs_vista.db
-*~
-desktop.ini
-ntuser.ini
-
-# Build
-build/
-dist/
-coverage/
-
-# Optional files
-.firebase/
-*.cache
-*.diff
-*.err
-*.orig
-*.rej
-*.swo
-*.swp
-*.vi
-*~
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

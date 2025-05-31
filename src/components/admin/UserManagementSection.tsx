@@ -1,92 +1,254 @@
 
 'use client';
 
+import { useEffect, useState, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserPlus, Edit, Trash2, ShieldAlert } from 'lucide-react';
+import { Edit, Trash2, ShieldAlert, Loader2, UserCheck, UserX, UserPlus, ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { listAllUsers, setUserAdminRole, toggleUserDisabledStatus, deleteFirebaseUser, type AdminUserRepresentation } from '@/app/admin/user-actions';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
+import { nl } from 'date-fns/locale';
 
-const dummyUsers = [
-  { id: 'user1', email: 'gebruiker1@voorbeeld.nl', uid: 'uid123xyz', role: 'Gebruiker' },
-  { id: 'user2', email: 'admin@frissestart.nl', uid: 'uid789abc', role: 'Admin' },
-  { id: 'user3', email: 'cursist@test.com', uid: 'uid456def', role: 'Cursist' },
-];
+const ITEMS_PER_PAGE = 10;
 
 export function UserManagementSection() {
   const { toast } = useToast();
+  const [users, setUsers] = useState<AdminUserRepresentation[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState<{[key: string]: boolean}>({});
+  const [nextPageToken, setNextPageToken] = useState<string | undefined>(undefined);
+  const [currentPageToken, setCurrentPageToken] = useState<string | undefined>(undefined); // Track current page for "previous"
 
-  const handleAddNewUser = () => {
-    toast({ title: "Info", description: "Functionaliteit 'Nieuwe Gebruiker Toevoegen' is nog niet geïmplementeerd via deze interface. Gebruik Firebase Authentication Console." });
+  const fetchUsers = useCallback(async (pageToken?: string) => {
+    setIsLoading(true);
+    const result = await listAllUsers(ITEMS_PER_PAGE, pageToken);
+    if (result.error) {
+      toast({ variant: "destructive", title: "Fout bij ophalen gebruikers", description: result.error });
+      setUsers([]);
+    } else {
+      setUsers(result.users);
+      setNextPageToken(result.nextPageToken);
+    }
+    setIsLoading(false);
+  }, [toast]);
+
+  useEffect(() => {
+    fetchUsers(currentPageToken);
+  }, [fetchUsers, currentPageToken]);
+
+  const handleAction = async (
+    actionFunction: () => Promise<{ success: boolean; error?: string }>,
+    actionKey: string,
+    successMessage: string
+  ) => {
+    setIsSubmitting(prev => ({ ...prev, [actionKey]: true }));
+    const result = await actionFunction();
+    if (result.success) {
+      toast({ title: "Succes", description: successMessage });
+      fetchUsers(currentPageToken); // Refresh list
+    } else {
+      toast({ variant: "destructive", title: "Fout", description: result.error });
+    }
+    setIsSubmitting(prev => ({ ...prev, [actionKey]: false }));
   };
 
-  const handleEditUser = (userId: string) => {
-    toast({ title: "Info", description: `Functionaliteit 'Bewerk Gebruiker ${userId}' is nog niet geïmplementeerd.` });
+  const handleSetAdmin = (uid: string, isAdmin: boolean) => {
+    handleAction(
+      () => setUserAdminRole(uid, isAdmin),
+      `admin-${uid}`,
+      `Admin status voor gebruiker ${uid} ${isAdmin ? 'toegekend' : 'ingetrokken'}.`
+    );
   };
 
-  const handleDeleteUser = (userId: string) => {
-    toast({ title: "Info", description: `Functionaliteit 'Verwijder Gebruiker ${userId}' is nog niet geïmplementeerd.` });
+  const handleToggleDisabled = (uid: string, isDisabled: boolean) => {
+    handleAction(
+      () => toggleUserDisabledStatus(uid, isDisabled),
+      `disable-${uid}`,
+      `Gebruiker ${uid} ${isDisabled ? 'uitgeschakeld' : 'ingeschakeld'}.`
+    );
+  };
+
+  const handleDeleteUser = (uid: string) => {
+    handleAction(
+      () => deleteFirebaseUser(uid),
+      `delete-${uid}`,
+      `Gebruiker ${uid} verwijderd.`
+    );
+  };
+  
+  const formatDateSafe = (dateString?: string) => {
+    if (!dateString) return 'N/A';
+    try {
+      return format(new Date(dateString), 'dd-MM-yyyy HH:mm', { locale: nl });
+    } catch {
+      return dateString;
+    }
   };
 
   return (
     <Card className="shadow-md">
-      <CardHeader className="flex flex-row justify-between items-center">
-        <div>
-          <CardTitle>Gebruikersbeheer</CardTitle>
-          <CardDescription>Beheer gebruikersaccounts en rollen (momenteel placeholder).</CardDescription>
-        </div>
-         <Button onClick={handleAddNewUser} variant="outline" className="border-primary text-primary hover:bg-primary/10 hover:text-primary">
-          <UserPlus className="mr-2 h-4 w-4" /> Nieuwe Gebruiker
-        </Button>
+      <CardHeader>
+        <CardTitle>Gebruikersbeheer (Firebase Admin)</CardTitle>
+        <CardDescription>Beheer gebruikersaccounts, rollen en status.</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-300 rounded-md text-yellow-700 flex items-start">
-          <ShieldAlert className="h-5 w-5 mr-3 mt-1 shrink-0" />
-          <div>
-            <h4 className="font-semibold">Beperkte Functionaliteit</h4>
-            <p className="text-sm">
-              Volledig gebruikersbeheer, inclusief het toewijzen van rollen (zoals admin) en het beheren van wachtwoorden,
-              vereist Firebase Admin SDK-rechten. Deze operaties dienen veilig via een backend of de Firebase Console te worden uitgevoerd.
-              Deze sectie is een placeholder om de structuur te tonen.
-            </p>
-          </div>
+        <div className="mb-4 flex justify-between items-center">
+           <Button onClick={() => toast({title: "Info", description: "Nieuwe gebruiker aanmaken via Firebase Console."})} variant="outline">
+            <UserPlus className="mr-2 h-4 w-4" /> Nieuwe Gebruiker (via Console)
+          </Button>
+          <Button onClick={() => fetchUsers(currentPageToken)} variant="outline" size="sm" disabled={isLoading}>
+            <RefreshCw className={cn("mr-2 h-4 w-4", isLoading && "animate-spin")} /> Vernieuwen
+          </Button>
         </div>
 
-        <div className="overflow-x-auto">
+        {isLoading && users.length === 0 ? (
+          <div className="flex justify-center items-center py-10">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="ml-2 text-muted-foreground">Gebruikers laden...</p>
+          </div>
+        ) : users.length === 0 && !isLoading ? (
+           <div className="text-center py-10">
+            <AlertTriangle className="mx-auto h-12 w-12 text-primary/70" />
+            <p className="mt-4 text-lg font-medium text-muted-foreground">Geen gebruikers gevonden.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Email</TableHead>
-                  <TableHead>UID (Firebase)</TableHead>
-                  <TableHead>Rol (Voorbeeld)</TableHead>
-                  <TableHead className="text-center">Acties (Voorbeeld)</TableHead>
+                  <TableHead className="w-[25%]">E-mail</TableHead>
+                  <TableHead className="w-[20%]">Naam</TableHead>
+                  <TableHead className="w-[15%]">Admin Rol</TableHead>
+                  <TableHead className="w-[15%]">Actief</TableHead>
+                  <TableHead className="w-[15%]">Laatst ingelogd</TableHead>
+                  <TableHead className="text-center w-[10%]">Acties</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {dummyUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.email}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground">{user.uid}</TableCell>
-                    <TableCell>{user.role}</TableCell>
+                {users.map((user) => (
+                  <TableRow key={user.uid}>
+                    <TableCell className="font-medium">{user.email || 'N/A'}</TableCell>
+                    <TableCell>{user.displayName || 'N/A'}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id={`admin-${user.uid}`}
+                          checked={user.isAdmin}
+                          onCheckedChange={(checked) => handleSetAdmin(user.uid, checked)}
+                          disabled={isSubmitting[`admin-${user.uid}`] || isSubmitting[`disable-${user.uid}`] || isSubmitting[`delete-${user.uid}`]}
+                        />
+                        <Label htmlFor={`admin-${user.uid}`} className={cn(user.isAdmin ? "text-green-600" : "text-muted-foreground")}>
+                           {isSubmitting[`admin-${user.uid}`] ? <Loader2 className="h-4 w-4 animate-spin" /> : (user.isAdmin ? 'Ja' : 'Nee')}
+                        </Label>
+                      </div>
+                    </TableCell>
+                     <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          id={`disable-${user.uid}`}
+                          checked={!user.disabled}
+                          onCheckedChange={(checked) => handleToggleDisabled(user.uid, !checked)}
+                          disabled={isSubmitting[`admin-${user.uid}`] || isSubmitting[`disable-${user.uid}`] || isSubmitting[`delete-${user.uid}`]}
+                          className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
+                        />
+                         <Label htmlFor={`disable-${user.uid}`} className={cn(!user.disabled ? "text-green-600" : "text-red-600")}>
+                            {isSubmitting[`disable-${user.uid}`] ? <Loader2 className="h-4 w-4 animate-spin" /> : (!user.disabled ? 'Actief' : 'Inactief')}
+                        </Label>
+                      </div>
+                    </TableCell>
+                     <TableCell className="text-xs text-muted-foreground">{formatDateSafe(user.lastSignInTime)}</TableCell>
                     <TableCell className="text-center">
-                      <Button variant="ghost" size="sm" onClick={() => handleEditUser(user.id)} className="mr-2">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteUser(user.id)} className="text-destructive hover:text-destructive/80">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                       <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80" disabled={isSubmitting[`delete-${user.uid}`]}>
+                             {isSubmitting[`delete-${user.uid}`] ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Gebruiker Verwijderen?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Weet u zeker dat u gebruiker {user.email || user.uid} wilt verwijderen? Dit kan niet ongedaan gemaakt worden.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Annuleren</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDeleteUser(user.uid)}
+                              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                            >
+                              Ja, Verwijder Gebruiker
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+          </div>
+        )}
+         <div className="mt-6 flex items-center justify-end space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+                // Voor 'vorige' is een meer complexe state nodig om vorige pageTokens bij te houden.
+                // Voor nu resetten we of gaan we naar de start als er geen logica is.
+                toast({title: "Info", description: "Vorige pagina functionaliteit nog niet volledig geïmplementeerd."})
+                setCurrentPageToken(undefined);
+                // fetchUsers(undefined); // Om naar de eerste pagina te gaan
+            }}
+            disabled={!currentPageToken || isLoading} 
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Vorige
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+                setCurrentPageToken(nextPageToken);
+                fetchUsers(nextPageToken);
+            }}
+            disabled={!nextPageToken || isLoading}
+          >
+            Volgende
+            <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
         </div>
       </CardContent>
-       <CardFooter>
+      <CardFooter>
         <p className="text-xs text-muted-foreground">
-          Gebruik de Firebase Console voor daadwerkelijk gebruikersbeheer.
+          Gebruikers worden beheerd via de Firebase Admin SDK. Wijzigingen zijn direct van kracht.
         </p>
       </CardFooter>
     </Card>
   );
 }
+
+```
+  </change>
+  <change>
+    <file>/.env.example</file>
+    <content><![CDATA[
+# Firebase Client SDK - Publieke variabelen (prefix NEXT_PUBLIC_)
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+
+# Firebase Admin SDK - Server-side (GEEN NEXT_PUBLIC_ prefix)
+# Sla de volledige inhoud van je serviceAccountKey.json bestand op als een Base64-gecodeerde string.
+# Dit is om problemen met newlines en speciale karakters in de private key te voorkomen.
+# Genereer de Base64 string bijvoorbeeld met: cat serviceAccountKey.json | base64
+FIREBASE_ADMIN_SERVICE_ACCOUNT_BASE64=
