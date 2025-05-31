@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { CheckCircle, XCircle, Trash2, Loader2, DatabaseZap, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getReviewsData } from '@/lib/review-data';
@@ -33,7 +33,7 @@ export function ReviewManagementSection() {
     try {
       const fetchedReviews = await getReviewsData();
       setReviews(fetchedReviews);
-      setVisibleReviewsCount(ITEMS_PER_PAGE); // Reset count when reviews are reloaded
+      setVisibleReviewsCount(ITEMS_PER_PAGE); 
     } catch (error) {
       console.error("Error loading reviews for admin:", error);
       toast({ variant: "destructive", title: "Fout", description: "Kon reviewdata niet laden." });
@@ -72,7 +72,7 @@ export function ReviewManagementSection() {
     try {
       await action();
       toast({ title: "Succes", description: successMessage });
-      loadReviews(); // Refresh de lijst
+      loadReviews(); 
     } catch (error) {
       console.error(errorMessage, error);
       toast({ variant: "destructive", title: "Fout", description: "Actie mislukt. Controleer console voor details." });
@@ -88,7 +88,7 @@ export function ReviewManagementSection() {
     const result = await seedDatabaseWithJsonReviews();
     if (result.success) {
       toast({ title: "Database Gevuld", description: result.message });
-      loadReviews(); // Refresh de lijst
+      loadReviews(); 
     } else {
       toast({ variant: "destructive", title: "Seed Mislukt", description: result.message });
     }
@@ -170,13 +170,13 @@ export function ReviewManagementSection() {
               <TableBody>
                 {reviews.slice(0, visibleReviewsCount).map((review, index) => (
                   <TableRow 
-                    key={review.id || `review-${index}`} 
+                    key={review.id || \`review-\${index}\`} 
                     ref={index === visibleReviewsCount - 1 ? lastReviewElementRef : null}
                   >
                     <TableCell className="font-medium">{review.title}</TableCell>
                     <TableCell>{review.reviewer_name}</TableCell>
                     <TableCell className="text-center">{formatDate(review.date)}</TableCell>
-                    <TableCell className="text-center">{review.rating / 2}/5</TableCell> {}
+                    <TableCell className="text-center">{review.rating / 2}/5</TableCell>
                     <TableCell className="text-center">{getStatusBadge(review.isApproved)}</TableCell>
                     <TableCell className="text-center space-x-1">
                       <Button variant="ghost" size="sm" onClick={() => handleApprove(review.id!)} title="Goedkeuren" className="text-green-600 hover:text-green-700">
