@@ -15,6 +15,7 @@ import type { Review } from '@/types/reviews';
 import { Badge } from '@/components/ui/badge';
 import { format, parseISO } from 'date-fns';
 import { nl } from 'date-fns/locale';
+import { cn } from '@/lib/utils';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -31,7 +32,7 @@ export function ReviewManagementSection() {
   const loadReviews = useCallback(async () => {
     setIsLoading(true);
     try {
-      const fetchedReviews = await getReviewsData();
+      const fetchedReviews = await getReviewsData({ forAdmin: true }); // Vraag alle reviews op voor admin
       setReviews(fetchedReviews);
       setVisibleReviewsCount(ITEMS_PER_PAGE); 
     } catch (error) {
@@ -101,14 +102,15 @@ export function ReviewManagementSection() {
     } catch (e) { return dateString; }
   };
 
-  const getStatusBadge = (isApproved?: boolean) => {
+  const getStatusBadge = (isApproved?: boolean | null) => { // Accepteer ook null
     if (isApproved === true) {
       return <Badge variant="secondary" className="bg-green-100 text-green-700">Goedgekeurd</Badge>;
     }
     if (isApproved === false) {
       return <Badge variant="destructive" className="bg-red-100 text-red-700">Afgekeurd</Badge>;
     }
-    return <Badge variant="outline">Nieuw</Badge>;
+    // Als isApproved null of undefined is, beschouw het als 'Nieuw'
+    return <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300">Nieuw</Badge>;
   };
 
   if (isLoading && reviews.length === 0) {
