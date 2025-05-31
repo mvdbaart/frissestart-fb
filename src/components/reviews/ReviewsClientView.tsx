@@ -16,6 +16,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { db } from '@/lib/firebase'; // Importeer db instance
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'; // Firestore functies
 
 interface ReviewsClientViewProps {
   initialReviews: Review[];
@@ -23,7 +25,7 @@ interface ReviewsClientViewProps {
 
 const ITEMS_PER_PAGE = 9;
 
-const subratingSchema = z.number().min(0).max(5).optional().default(0); // 0 for not rated
+const subratingSchema = z.number().min(0).max(5).optional().default(0);
 
 const reviewFormSchema = z.object({
   reviewer_name: z.string().min(2, { message: "Naam is verplicht (min. 2 karakters)." }),
@@ -67,7 +69,6 @@ function StarRatingInput({ value, onChange, maxStars = 5 }: StarRatingInputProps
   );
 }
 
-
 export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
   const [reviewsToShow, setReviewsToShow] = useState<Review[]>(initialReviews.slice(0, ITEMS_PER_PAGE));
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -84,7 +85,7 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
       reviewer_type: undefined,
       title: "",
       review_text: "",
-      rating: 0, 
+      rating: 0,
       subratings: {
         Begeleiding: 0,
         "Heldere communicatie": 0,
@@ -96,32 +97,44 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
 
   const handleFormSubmit: SubmitHandler<ReviewFormData> = async (data) => {
     setIsSubmittingReview(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Convert 1-5 star ratings for subratings to 1-10 for potential backend consistency
-    // For now, we just log them as 1-5 as per form input.
-    const submittedDataForLog = {
-      ...data,
-      date: new Date().toISOString().split('T')[0],
-      rating: data.rating * 2, // Convert main rating to 1-10 scale for logging consistency with existing data
-      subratings: data.subratings ? {
-        Begeleiding: data.subratings.Begeleiding ? data.subratings.Begeleiding * 2 : undefined,
-        "Heldere communicatie": data.subratings["Heldere communicatie"] ? data.subratings["Heldere communicatie"] * 2 : undefined,
-        Enthousiasme: data.subratings.Enthousiasme ? data.subratings.Enthousiasme * 2 : undefined,
-        Marktkennis: data.subratings.Marktkennis ? data.subratings.Marktkennis * 2 : undefined,
-      } : undefined,
-      recommended: data.rating >= 4 // Example: auto-recommend if rating is 4 or 5 stars (8/10)
-    };
-    console.log("Nieuwe review data (geschaald naar 1-10 voor log):", submittedDataForLog);
+    try {
+      const reviewDataToSave: Omit<Review, 'id'> = {
+        reviewer_name: data.reviewer_name,
+        reviewer_type: data.reviewer_type,
+        title: data.title,
+        review_text: data.review_text,
+        rating: data.rating * 2, // Converteer 1-5 sterren naar 1-10 schaal
+        date: new Date().toISOString().split('T')[0], // ISO string YYYY-MM-DD
+        createdAt: serverTimestamp(), // Firestore server timestamp
+        recommended: data.rating >= 4, // Bepaal 'recommended' op basis van 4 of 5 sterren
+        subratings: data.subratings ? {
+          Begeleiding: data.subratings.Begeleiding ? data.subratings.Begeleiding * 2 : undefined,
+          "Heldere communicatie": data.subratings["Heldere communicatie"] ? data.subratings["Heldere communicatie"] * 2 : undefined,
+          Enthousiasme: data.subratings.Enthousiasme ? data.subratings.Enthousiasme * 2 : undefined,
+          Marktkennis: data.subratings.Marktkennis ? data.subratings.Marktkennis * 2 : undefined,
+        } : undefined,
+      };
 
-    toast({
-      title: "Review Ontvangen!",
-      description: "Bedankt voor uw review. Deze wordt zo snel mogelijk bekeken.",
-    });
-    
-    form.reset();
-    setIsFormVisible(false);
-    setIsSubmittingReview(false);
+      await addDoc(collection(db, "reviews"), reviewDataToSave);
+
+      toast({
+        title: "Review Succesvol Ingediend!",
+        description: "Bedankt voor uw feedback. Uw review wordt zo snel mogelijk verwerkt.",
+      });
+      form.reset();
+      setIsFormVisible(false);
+      // Optioneel: refresh de reviews lijst of voeg de nieuwe review optimistisch toe
+      // Voor nu, de gebruiker zal de review zien na een page refresh/nieuwe fetch
+    } catch (error) {
+      console.error("Error submitting review to Firestore:", error);
+      toast({
+        variant: "destructive",
+        title: "Fout bij indienen review",
+        description: "Er is iets misgegaan. Probeer het later opnieuw.",
+      });
+    } finally {
+      setIsSubmittingReview(false);
+    }
   };
 
   const loadMoreReviews = useCallback(() => {
@@ -256,7 +269,7 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
                 />
                 
                 <div className="space-y-4 pt-4 border-t">
-                  <FormLabel className="text-md font-medium">Specifieke Beoordelingen (optioneel)</FormLabel>
+                  <FormLabel className="text-md font-medium">Specifieke Beoordelingen (optioneel, 1-5 sterren)</FormLabel>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                     {subratingLabels.map((subKey) => (
                       <FormField
@@ -300,14 +313,15 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {reviewsToShow.map((review, index) => {
+          const key = review.id || `${review.date}-${review.reviewer_name}-${index}`;
           if (reviewsToShow.length === index + 1) {
             return (
-              <div ref={lastReviewElementRef} key={review.date + review.reviewer_name + index}>
+              <div ref={lastReviewElementRef} key={key}>
                 <ReviewCard review={review} />
               </div>
             );
           }
-          return <ReviewCard key={review.date + review.reviewer_name + index} review={review} />;
+          return <ReviewCard key={key} review={review} />;
         })}
       </div>
       {isLoadingMore && (
