@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 export function HeroSection() {
   return (
-    <SectionContainer className="relative pt-12 pb-8 md:pt-20 lg:pt-24 md:pb-16 lg:pb-20 h-[33vh] flex items-center justify-center text-center md:text-left text-white">
+    <SectionContainer className="relative pt-12 pb-8 md:pt-20 lg:pt-24 md:pb-16 lg:pb-20 min-h-[70vh] flex items-center justify-center text-center md:text-left text-white">
       <Image
         src="/images/frissestart-header.jpg"
         alt="Frisse Start Header Achtergrond"
