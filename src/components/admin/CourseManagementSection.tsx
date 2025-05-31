@@ -1,18 +1,15 @@
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { fetchAndCache } from '@/lib/cache';
-import type { Opleiding, CursusDetail, Locatie, GecombineerdeCursus } from '@/types/opleidingen';
+// fetchAndCache import is niet meer nodig hier
+import type { GecombineerdeCursus } from '@/types/opleidingen'; // Opleiding, CursusDetail, Locatie niet meer nodig
 import { PlusCircle, Edit, Trash2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-const OPLEIDINGEN_CACHE_KEY = 'opleidingen_data_v1';
-const CURSUS_DETAILS_CACHE_KEY = 'cursus_details_data_v1';
-const LOCATIES_CACHE_KEY = 'locaties_data_v1';
+import { getAdminCourseData } from '@/app/admin/actions'; // Import de nieuwe server action
 
 export function CourseManagementSection() {
   const [courses, setCourses] = useState<GecombineerdeCursus[]>([]);
@@ -23,33 +20,11 @@ export function CourseManagementSection() {
     async function loadCourses() {
       setIsLoading(true);
       try {
-        const [opleidingenData, cursusDetailsData, locatiesData] = await Promise.all([
-          fetchAndCache<Opleiding>('https://opleidingen.frissestart.nl/wp-json/mo/v1/opleidingen', OPLEIDINGEN_CACHE_KEY),
-          fetchAndCache<CursusDetail>('https://opleidingen.frissestart.nl/wp-json/mo/v1/cursussen', CURSUS_DETAILS_CACHE_KEY),
-          fetchAndCache<Locatie>('https://opleidingen.frissestart.nl/wp-json/mo/v1/locaties', LOCATIES_CACHE_KEY),
-        ]);
-
-        const tempCursusDetailsMap = new Map<string, CursusDetail>();
-        cursusDetailsData.forEach(detail => tempCursusDetailsMap.set(detail.id.toString(), detail));
-
-        const tempLocatiesMap = new Map<string, Locatie>();
-        locatiesData.forEach(locatie => tempLocatiesMap.set(locatie.id.toString(), locatie));
-
-        const combined = opleidingenData.map(opleiding => {
-          const detail = tempCursusDetailsMap.get(opleiding.cursus_id);
-          const locatie = tempLocatiesMap.get(opleiding.locatie_id);
-          const maxAantal = parseInt(opleiding.maximum_aantal, 10);
-          const gereserveerd = parseInt(opleiding.aantal_gereserveerd || '0', 10);
-          const vrijePlekken = isNaN(maxAantal) || isNaN(gereserveerd) ? undefined : maxAantal - gereserveerd;
-          return {
-            ...opleiding,
-            cursusNaam: detail?.naam || `Cursus ID: ${opleiding.cursus_id}`,
-            cursusLink: detail?.link,
-            locatieNaam: locatie?.naam || `Locatie ID: ${opleiding.locatie_id}`,
-            vrijePlekken,
-          };
-        }).sort((a, b) => new Date(a.datum).getTime() - new Date(b.datum).getTime());
-        setCourses(combined);
+        const { courses: fetchedCourses, error } = await getAdminCourseData();
+        if (error) {
+          throw new Error(error);
+        }
+        setCourses(fetchedCourses);
       } catch (error) {
         console.error("Error loading course data for admin:", error);
         toast({ variant: "destructive", title: "Fout", description: "Kon cursusdata niet laden." });

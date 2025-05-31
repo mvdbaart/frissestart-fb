@@ -170,7 +170,7 @@ export function ReviewManagementSection() {
               <TableBody>
                 {reviews.slice(0, visibleReviewsCount).map((review, index) => (
                   <TableRow 
-                    key={review.id || \`review-\${index}\`} 
+                    key={review.id || `review-${index}`} 
                     ref={index === visibleReviewsCount - 1 ? lastReviewElementRef : null}
                   >
                     <TableCell className="font-medium">{review.title}</TableCell>
