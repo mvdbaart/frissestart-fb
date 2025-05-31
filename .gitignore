@@ -1,38 +1,44 @@
 
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Firebase
-.firebase/
-firebase-debug.log
-database-debug.log
-
-# dependencies
+# Dependencies
 /node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
 
-# local
-.DS_Store
-*.pem
-.env*
+# Next.js
+/.next/
+/out/
 
-# vscode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
 
+# Firebase Studio specific cache
+/.custom_cache/
 
-# Logs
+# API keys and secrets
+# .env files are generally for local development secrets.
+# **Never commit .env files containing sensitive information directly.**
+# Instead, use environment variables provided by your hosting platform
+# or a secrets management solution.
+.env
+.env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Log files
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+logs
+*.log
 
 # Editor directories and files
-.idea
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
@@ -40,18 +46,46 @@ pnpm-debug.log*
 !.vscode/extensions.json
 *.sublime-workspace
 
-# Next.js specific
-.next/
-out/
+# Optional User specific files
+.idea
+.project
+.classpath
+.cproject
+.buildpath
+*.launch
+.settings/
+*.tmproj
+*.tmproject
+*.kdev4
 
+# Firebase
+# If you're using Firebase emulators, you might want to ignore their export data
+# firebase-export-*
+# .firebase/
 
-# Turbopack
-.turbo/
+# Operating System Files
+.DS_Store
+._*
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+*~
+desktop.ini
+ntuser.ini
 
-# Custom cache directory
-.custom_cache/
+# Build
+build/
+dist/
+coverage/
 
-# extra
-.idx
-.modified
-
+# Optional files
+.firebase/
+*.cache
+*.diff
+*.err
+*.orig
+*.rej
+*.swo
+*.swp
+*.vi
+*~
