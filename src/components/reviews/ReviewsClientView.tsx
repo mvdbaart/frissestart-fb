@@ -15,6 +15,7 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils'; // Import cn utility
 
 interface ReviewsClientViewProps {
   initialReviews: Review[];
@@ -27,7 +28,7 @@ const reviewFormSchema = z.object({
   reviewer_type: z.enum(["Cursist", "Opdrachtgever", "Kandidaat"], { required_error: "Selecteer uw type." }),
   title: z.string().min(5, { message: "Titel is verplicht (min. 5 karakters)." }),
   review_text: z.string().min(20, { message: "Reviewtekst is verplicht (min. 20 karakters)." }).max(1000, {message: "Maximale lengte is 1000 karakters."}),
-  rating: z.number().min(1).max(5, { message: "Beoordeling tussen 1 en 5 sterren." }),
+  rating: z.number().min(1,{ message: "Beoordeling is verplicht." }).max(5, { message: "Beoordeling tussen 1 en 5 sterren." }),
 });
 
 type ReviewFormData = z.infer<typeof reviewFormSchema>;
@@ -48,7 +49,7 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
       reviewer_type: undefined,
       title: "",
       review_text: "",
-      rating: 0,
+      rating: 0, // Default to 0, user must select a star
     },
   });
 
@@ -258,4 +259,3 @@ export function ReviewsClientView({ initialReviews }: ReviewsClientViewProps) {
     </div>
   );
 }
-
